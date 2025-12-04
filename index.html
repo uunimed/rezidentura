@@ -539,54 +539,55 @@
   }
   
   /* Exam Test Boxes Grid - 5 per row in exam mode */
-  .exam-test-boxes {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-    width: 100%;
-    height: calc(100vh - 150px);
-    padding: 15px 10px;
-    overflow-y: auto;
-    background: #f8fafc;
-    border-radius: 8px;
-  }
-  
-  .test-box {
-    width: 100%;
-    aspect-ratio: 1;
-    min-width: 45px;
-    min-height: 45px;
-    border: 2px solid #e2e8f0;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.2s;
-    background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-  
-  .test-box:hover {
-    transform: scale(1.1);
-    border-color: var(--accent);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  }
-  
-  .test-box.answered {
-    background: #f1f5f9;
-    color: #64748b;
-    border-color: #94a3b8;
-  }
-  
-  .test-box.current {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-    transform: scale(1.1);
-  }
+ /* Exam Test Boxes Grid - 5 per row with FIXED size boxes */
+.exam-test-boxes {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  width: 100%;
+  height: calc(100vh - 150px);
+  padding: 15px 10px;
+  overflow-y: auto;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.test-box {
+  width: 45px; /* FIXED width */
+  height: 45px; /* FIXED height - removes aspect-ratio dependency */
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  /* Center the box in the grid cell */
+  margin: 0 auto;
+}
+
+.test-box:hover {
+  transform: scale(1.1);
+  border-color: var(--accent);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.test-box.answered {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #94a3b8;
+}
+
+.test-box.current {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
   
   /* Exam Navigation Container - Under Last Question */
   .exam-navigation-container {
