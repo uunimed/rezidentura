@@ -1055,6 +1055,74 @@
     justify-content: center;
   }
   
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+  
+  .modal-overlay.active {
+    display: flex;
+  }
+  
+  .modal {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+  
+  .modal-header {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .modal-content {
+    font-size: 16px;
+    color: #64748b;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  
+  .modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+  }
+  
+  .modal-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 120px;
+  }
+  
+  .modal-btn.confirm {
+    background: var(--success);
+    color: white;
+  }
+  
+  .modal-btn.cancel {
+    background: var(--danger);
+    color: white;
+  }
+  
   /* Hidden class */
   .hidden{
     display: none;
@@ -1086,11 +1154,11 @@
       ჩატი
     </button>
     
-    <!-- Online Status - Next to chat button -->
-    <div class="online-status">
-      <div class="online-dot"></div>
-      <span class="online-text">ონლაინ: <span id="onlineCount">0</span></span>
-    </div>
+<!-- Online Status - Next to chat button -->
+<div class="online-status">
+  <div class="online-dot"></div>
+  <span class="online-text">ონლაინ: <span id="onlineCount">1</span></span>
+</div>
     
     <!-- Chat Window - 80% height -->
     <div id="chatWindow" class="chat-window">
@@ -1108,6 +1176,31 @@
             <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="white"/>
           </svg>
         </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal for Exam Finish Confirmation -->
+  <div id="finishExamModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">გამოცდის დასრულება</div>
+      <div class="modal-content">ნამდვილად გსურთ დასრულება, თუ გინდათ გადახედოთ ტესტს?</div>
+      <div class="modal-buttons">
+        <button id="confirmFinishBtn" class="modal-btn confirm">დიახ, დახურვა</button>
+        <button id="cancelFinishBtn" class="modal-btn cancel">გადახედვა</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal for Detailed Results -->
+  <div id="detailedResultsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 800px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+      <div class="modal-header" style="margin-bottom: 20px;">დეტალური შედეგები</div>
+      <div id="detailedResultsContent" style="flex: 1; overflow-y: auto; padding-right: 10px;">
+        <!-- Detailed results will be inserted here -->
+      </div>
+      <div class="modal-buttons" style="margin-top: 20px;">
+        <button id="closeDetailsBtn" class="modal-btn confirm">დახურვა</button>
       </div>
     </div>
   </div>
@@ -1198,7 +1291,7 @@
                 </svg>
                 წინა
               </button>
-              <button id="examFinishBtn" class="nav-btn" style="background: var(--danger);">
+              <button id="examFinishBtn" class="nav-btn" style="background: var(--danger); display: none;">
                 გამოცდის დასრულება
               </button>
               <button id="examNextBtn" class="nav-btn">
@@ -1257,7 +1350,7 @@ try {
 
 // ==================== ENHANCED CHAT SYSTEM ====================
 let chatMessages = [];
-let onlineUsers = 1;
+let onlineUsers = 1; // Start with 1 for the current user
 let userName = localStorage.getItem('chatUserName') || ('სტუმარი ' + Math.floor(Math.random() * 1000));
 let userId = localStorage.getItem('chatUserId');
 let isOnline = false;
@@ -1290,8 +1383,8 @@ function initChat() {
   // Clear chat messages container
   chatMessagesEl.innerHTML = '';
   
-  // Update online users count
-  onlineCount.textContent = onlineUsers;
+  // Update online users count - always show 1 for current user
+  onlineCount.textContent = '1';
   
   // Setup Firebase if available
   if (firebaseInitialized && database) {
@@ -1375,17 +1468,28 @@ function setupFirebaseListeners() {
       }
     });
     
-    // Listen for online users count
-    database.ref('chat/onlineUsers').on('value', (snapshot) => {
-      if (snapshot.exists()) {
-        const users = snapshot.val();
-        onlineUsers = Object.keys(users).length;
-        onlineCount.textContent = onlineUsers;
-      } else {
-        onlineUsers = 1;
-        onlineCount.textContent = onlineUsers;
+// For online count - show only 1 for current user
+database.ref('chat/onlineUsers').on('value', (snapshot) => {
+  if (snapshot.exists()) {
+    const users = snapshot.val();
+    const now = Date.now();
+    // Count only users active in the last 30 seconds
+    let activeUsers = 1; // Start with current user
+    
+    Object.keys(users).forEach(key => {
+      if (users[key]?.userId !== userId && 
+          users[key]?.lastSeen && 
+          (now - users[key].lastSeen) < 30000) {
+        activeUsers++;
       }
     });
+    
+    onlineCount.textContent = activeUsers.toString();
+  } else {
+    // Only current user is online
+    onlineCount.textContent = '1';
+  }
+});
     
     // Set user as online
     setUserOnline();
@@ -1420,19 +1524,41 @@ function setUserOnline() {
   
   try {
     const userRef = database.ref('chat/onlineUsers/' + userId);
+    
+    // First, clean up old users (older than 1 minute)
+    database.ref('chat/onlineUsers').once('value').then((snapshot) => {
+      if (snapshot.exists()) {
+        const users = snapshot.val();
+        const now = Date.now();
+        const updates = {};
+        
+        Object.keys(users).forEach(key => {
+          if (users[key]?.lastSeen && (now - users[key].lastSeen) > 60000) {
+            updates[key] = null; // Remove inactive user
+          }
+        });
+        
+        if (Object.keys(updates).length > 0) {
+          database.ref('chat/onlineUsers').update(updates);
+        }
+      }
+    });
+    
+    // Set current user as online
     userRef.set({
       name: userName,
+      userId: userId,
       lastSeen: Date.now()
     });
     
     isOnline = true;
     
-    // Update last seen every 30 seconds
+    // Update last seen every 10 seconds (more frequent)
     setInterval(() => {
       if (isOnline && firebaseInitialized) {
         userRef.update({ lastSeen: Date.now() });
       }
-    }, 30000);
+    }, 10000);
     
     // Remove user when they leave
     window.addEventListener('beforeunload', () => {
@@ -1701,6 +1827,14 @@ const examQuestionText = document.getElementById('examQuestionText');
 const examAnswersContainer = document.getElementById('examAnswersContainer');
 const examFeedback = document.getElementById('examFeedback');
 
+// Modal elements
+const finishExamModal = document.getElementById('finishExamModal');
+const confirmFinishBtn = document.getElementById('confirmFinishBtn');
+const cancelFinishBtn = document.getElementById('cancelFinishBtn');
+const detailedResultsModal = document.getElementById('detailedResultsModal');
+const detailedResultsContent = document.getElementById('detailedResultsContent');
+const closeDetailsBtn = document.getElementById('closeDetailsBtn');
+
 /* ----------------- Timer Functions ----------------- */
 function updateTimer() {
   // Don't update timer if it's hidden (exam mode)
@@ -1774,6 +1908,9 @@ function startExamMode() {
   // Hide question counter in exam mode
   questionCounter.classList.add('hidden');
   
+  // Hide finish button initially
+  examFinishBtn.style.display = 'none';
+  
   // Create test boxes (5 per row in exam mode)
   createExamTestBoxes();
   
@@ -1781,6 +1918,28 @@ function startExamMode() {
   clearInterval(examTimerInterval);
   examTimerInterval = setInterval(updateExamTimer, 1000);
   updateExamTimer();
+}
+
+function checkAllQuestionsAnswered() {
+  if (!examMode) return false;
+  
+  // Check if all 200 questions are answered
+  const allAnswered = sessionTests.every(q => 
+    q.selectedAnswers && q.selectedAnswers.length > 0
+  );
+  
+  // Show/hide finish button based on completion
+  if (allAnswered) {
+    examFinishBtn.style.display = 'block';
+  } else {
+    examFinishBtn.style.display = 'none';
+  }
+  
+  return allAnswered;
+}
+
+function showFinishExamModal() {
+  finishExamModal.classList.add('active');
 }
 
 function completeExam() {
@@ -1804,16 +1963,6 @@ function completeExam() {
   const resultsHTML = `
     <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; padding: 20px;">
       <div style="max-width: 800px; width: 100%; background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden;">
-        <!-- Header -->
-        <div style="background: ${passed ? 'var(--success)' : 'var(--danger)'}; color: white; padding: 30px; text-align: center;">
-          <div style="font-size: 36px; font-weight: 700; margin-bottom: 10px;">
-            ${passed ? '🎉 გილოცავთ!' : '😔 ვერ ჩააბარეთ'}
-          </div>
-          <div style="font-size: 24px; font-weight: 600;">
-            საგამოცდო რეჟიმი დასრულდა!
-          </div>
-        </div>
-        
         <!-- Stats -->
         <div style="padding: 30px; border-bottom: 1px solid #e2e8f0;">
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px;">
@@ -1830,7 +1979,7 @@ function completeExam() {
           <div style="text-align: center; padding: 15px; background: #f8fafc; border-radius: 8px;">
             <div style="font-size: 16px; color: #64748b; margin-bottom: 5px;">შეფასება</div>
             <div style="font-size: 28px; font-weight: 700; color: ${passed ? 'var(--success)' : 'var(--danger)'}">
-              ${passed ? 'გამოცდა ჩაბარებულია' : 'გამოცდა ვერ ჩაიბარა'}
+              ${passed ? 'გამოცდა ჩაბარებულია' : 'ჩაჭრილია!'}
             </div>
             <div style="font-size: 18px; margin-top: 10px;">
               ${passed ? 'გილოცავთ! თქვენ წარმატებით ჩააბარეთ გამოცდა!' : 'სამწუხაროდ, თქვენ ვერ ჩააბარეთ გამოცდა. სცადეთ კიდევ.'}
@@ -1899,12 +2048,60 @@ function completeExam() {
     
     const viewDetailsBtn = document.getElementById('viewDetailsBtn');
     if (viewDetailsBtn) {
-      viewDetailsBtn.addEventListener('click', () => {
-        // You can implement detailed view here
-        alert('დეტალური ინფორმაცია თითოეულ კითხვაზე');
-      });
+      viewDetailsBtn.addEventListener('click', showDetailedResults);
     }
   }, 100);
+}
+
+function showDetailedResults() {
+  detailedResultsContent.innerHTML = '';
+  
+  // Create table
+  const table = document.createElement('table');
+  table.style.cssText = 'width: 100%; border-collapse: collapse; font-size: 14px;';
+  
+  // Table header
+  const thead = document.createElement('thead');
+  thead.innerHTML = `
+    <tr style="background: #f1f5f9;">
+      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">#</th>
+      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">კითხვა</th>
+      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">თქვენი პასუხი</th>
+      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">სწორი პასუხი</th>
+      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">სტატუსი</th>
+    </tr>
+  `;
+  table.appendChild(thead);
+  
+  // Table body
+  const tbody = document.createElement('tbody');
+  sessionTests.forEach((question, index) => {
+    const selectedAnswerIndex = question.selectedAnswers ? question.selectedAnswers[0] : -1;
+    const isCorrect = selectedAnswerIndex !== -1 && question.answers[selectedAnswerIndex]?.correct;
+    const selectedAnswer = selectedAnswerIndex !== -1 ? question.answers[selectedAnswerIndex].text : 'არაა არჩეული';
+    const correctAnswer = question.answers.find(a => a.correct)?.text || 'არ არის ცნობილი';
+    
+    const row = document.createElement('tr');
+    row.style.borderBottom = '1px solid #e2e8f0';
+    row.innerHTML = `
+      <td style="padding: 12px; font-weight: 600;">${index + 1}</td>
+      <td style="padding: 12px;">${escapeHtml(question.question.substring(0, 100))}${question.question.length > 100 ? '...' : ''}</td>
+      <td style="padding: 12px; color: ${isCorrect ? 'var(--success)' : 'var(--danger)'};">${escapeHtml(selectedAnswer)}</td>
+      <td style="padding: 12px; color: var(--success);">${escapeHtml(correctAnswer)}</td>
+      <td style="padding: 12px;">
+        <span style="padding: 4px 8px; border-radius: 4px; font-weight: 600; background: ${isCorrect ? '#d1fae5' : '#fee2e2'}; color: ${isCorrect ? '#065f46' : '#991b1b'}">
+          ${isCorrect ? 'სწორი' : 'არასწორი'}
+        </span>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+  
+  table.appendChild(tbody);
+  detailedResultsContent.appendChild(table);
+  
+  // Show modal
+  detailedResultsModal.classList.add('active');
 }
 
 /* ----------------- Auto-load CSV on page load ----------------- */
@@ -2052,7 +2249,7 @@ function renderCurrentQuestion() {
     renderExamAnswers();
     
     // Check if all questions are answered
-    checkExamCompletion();
+    checkAllQuestionsAnswered();
   } else {
     // Update normal question
     questionText.textContent = question.question;
@@ -2069,25 +2266,6 @@ function renderCurrentQuestion() {
     
     // Render normal answers
     renderNormalAnswers();
-  }
-}
-
-/* ----------------- Check if exam should be completed ----------------- */
-function checkExamCompletion() {
-  if (!examMode) return;
-  
-  // Check if all questions are answered
-  const allAnswered = sessionTests.every(q => 
-    q.selectedAnswers && q.selectedAnswers.length > 0
-  );
-  
-  // Check if we're on the last question
-  const isLastQuestion = currentIndex === sessionTests.length - 1;
-  
-  // If all questions answered and on last question, show completion option
-  if (allAnswered && isLastQuestion) {
-    // Show a message that exam can be completed
-    examFeedback.innerHTML = '<div style="color: var(--success); font-weight: 600;">ყველა კითხვა უპასუხია! დააჭირეთ "გამოცდის დასრულება" ღილაკს.</div>';
   }
 }
 
@@ -2219,8 +2397,8 @@ function renderExamAnswers() {
         // Update the test boxes to show this question is answered
         createExamTestBoxes();
         
-        // Check if exam should be completed
-        setTimeout(checkExamCompletion, 100);
+        // Check if all questions are answered
+        checkAllQuestionsAnswered();
         
         renderCurrentQuestion();
       });
@@ -2321,8 +2499,12 @@ function bindNavigationEvents() {
         currentIndex++;
         renderCurrentQuestion();
       } else {
-        // This is the last question, show results
-        completeExam();
+        // This is the last question, check if all are answered
+        if (checkAllQuestionsAnswered()) {
+          showFinishExamModal();
+        } else {
+          showNotification('გთხოვთ უპასუხოთ ყველა კითხვას გამოცდის დასრულებამდე');
+        }
       }
     });
   }
@@ -2339,11 +2521,33 @@ function bindNavigationEvents() {
   if (examFinishBtn) {
     examFinishBtn.addEventListener('click', () => {
       if (examMode) {
-        // Ask for confirmation before finishing
-        if (confirm('ნამდვილად გსურთ გამოცდის დასრულება? შეგიძლიათ შემდგომში უკან დაბრუნდეთ და განაგრძოთ.')) {
-          completeExam();
+        // Only allow finishing if all questions are answered
+        if (checkAllQuestionsAnswered()) {
+          showFinishExamModal();
+        } else {
+          showNotification('გთხოვთ უპასუხოთ ყველა კითხვას გამოცდის დასრულებამდე');
         }
       }
+    });
+  }
+  
+  // Modal button handlers
+  if (confirmFinishBtn) {
+    confirmFinishBtn.addEventListener('click', () => {
+      finishExamModal.classList.remove('active');
+      completeExam();
+    });
+  }
+  
+  if (cancelFinishBtn) {
+    cancelFinishBtn.addEventListener('click', () => {
+      finishExamModal.classList.remove('active');
+    });
+  }
+  
+  if (closeDetailsBtn) {
+    closeDetailsBtn.addEventListener('click', () => {
+      detailedResultsModal.classList.remove('active');
     });
   }
 }
