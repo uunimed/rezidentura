@@ -66,7 +66,7 @@
     }
   }
   
-  /* Timer - Hide in exam mode */
+  /* Timer */
   #timer {
     position: fixed;
     top: 10px;
@@ -222,174 +222,175 @@
     animation: vanish 0.5s ease forwards !important;
   }
   
-  /* Question Container - Modified for Exam Mode */
+  /* Question Counter - Bottom Right Corner */
+  .question-counter {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--accent);
+    z-index: 998;
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+  
+  .question-counter .counter-separator {
+    font-size: 28px;
+    color: #64748b;
+    font-weight: 600;
+    margin: 0 2px;
+  }
+  
+  .question-counter .total-questions {
+    font-size: 28px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  
+  .question-counter .current-question {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--accent);
+    transition: all 0.2s;
+    min-width: 50px;
+    text-align: center;
+  }
+  
+  /* Hover effect only on the number */
+  .question-counter .current-question:hover {
+    color: var(--success);
+    transform: scale(1.05);
+  }
+  
+  /* When editing, ONLY this element scales */
+  .question-counter .current-question.editing {
+    color: var(--success);
+    transform: scale(1.3);
+    font-weight: 700;
+    animation: pulse 0.3s ease;
+  }
+  
+  /* Make sure separator and total don't scale */
+  .question-counter .counter-separator,
+  .question-counter .total-questions {
+    transform: none !important;
+    font-size: 28px !important;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1.3); }
+  }
+  
+  /* Question Container - Different layouts for normal vs exam mode */
   .question-container{
     width: 100%;
     flex: 1;
-    display: flex;
   }
   
-  /* Left side - Questions & Answers (75% of screen) */
-  .question-left-panel {
-    width: 75%;
-    padding-right: 20px;
+  /* NORMAL MODE - Full width layout */
+  .normal-mode-container {
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
   }
   
   .question-text{
-    font-size: 20px;
+    font-size: 25px;
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.5;
     color: #0f172a;
-    margin-bottom: 15px;
+    text-align: center;
+    margin-bottom: 25px;
     padding: 0;
     width: 100%;
-    max-height: 80px;
-    overflow-y: auto;
+    margin-top: 0;
   }
   
-  /* Answers - Exam Mode (no immediate feedback) */
+  /* Answers - Normal Mode */
   .answers-container{
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 25px;
     flex: 1;
   }
   
   .answer-item{
-    padding: 12px 16px;
-    border-radius: 6px;
+    padding: 16px 20px;
+    border-radius: 8px;
     background: white;
     cursor: pointer;
     transition: all 0.2s;
     border: 1px solid #e2e8f0;
-    font-size: 15px;
-    line-height: 1.4;
+    font-size: 16px;
+    line-height: 1.5;
     width: 100%;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
   }
   
   .answer-item:hover{
     transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     border-color: var(--accent);
     background-color: #f8fafc;
   }
   
-  /* Exam mode - selected answer styling */
+  .answer-item.correct{
+    background: linear-gradient(135deg, #d1fae5, #f0fdf4);
+    border-color: var(--success);
+    color: #065f46;
+  }
+  
+  .answer-item.incorrect{
+    background: linear-gradient(135deg, #fee2e2, #fef2f2);
+    border-color: var(--danger);
+    color: #991b1b;
+  }
+  
   .answer-item.selected {
     background-color: #f1f5f9;
     border-color: #94a3b8;
+  }
+  
+  .answer-item.correct:hover,
+  .answer-item.incorrect:hover,
+  .answer-item.selected:hover {
+    transform: none;
+    cursor: default;
   }
   
   .answer-number{
     font-weight: 600;
     margin-right: 10px;
     color: var(--accent);
-    font-size: 15px;
-    min-width: 25px;
+    font-size: 16px;
   }
   
-  /* Feedback - Hidden in exam mode */
+  /* Feedback */
   .feedback{
     padding: 0 10px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     text-align: center;
-    min-height: 25px;
+    min-height: 30px;
   }
   
-  /* Right side - Exam Controls (25% of screen) */
-  .exam-right-panel {
-    width: 25%;
+  /* Navigation - Normal Mode */
+  .navigation {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    padding-left: 20px;
-    border-left: 1px solid #e2e8f0;
-    height: 100%;
-  }
-  
-  /* Exam Countdown */
-  .exam-countdown {
-    width: 100%;
-    text-align: center;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--danger);
-    margin-bottom: 15px;
-    padding: 8px;
-    background: #fee2e2;
-    border-radius: 6px;
-  }
-  
-  /* Exam Test Boxes Grid - 10 per row with clear divisions */
-  .exam-test-boxes {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 6px;
-    width: 100%;
-    height: calc(100vh - 150px);
     padding: 15px 10px;
-    overflow-y: auto;
-    background: #f8fafc;
-    border-radius: 8px;
-  }
-  
-  .test-box {
-    width: 100%;
-    aspect-ratio: 1;
-    min-width: 35px;
-    min-height: 35px;
-    border: 2px solid #e2e8f0;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.2s;
-    background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-  
-  /* Clear separation between boxes */
-  .test-box + .test-box {
-    margin-left: 0;
-  }
-  
-  .test-box:hover {
-    transform: scale(1.1);
-    border-color: var(--accent);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  }
-  
-  .test-box.answered {
-    background: #f1f5f9;
-    color: #64748b;
-    border-color: #94a3b8;
-  }
-  
-  .test-box.current {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-    transform: scale(1.1);
-  }
-  
-  /* Navigation Container - Under Last Question */
-  .navigation-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: auto;
-    padding: 15px 0;
     border-top: 1px solid #e2e8f0;
+    width: 100%;
+    margin-top: auto;
   }
   
   .nav-center {
@@ -430,6 +431,171 @@
   .nav-btn:hover:not(:disabled){
     opacity: 0.9;
     transform: translateY(-2px);
+  }
+  
+  /* EXAM MODE - Split layout */
+  .exam-mode-container {
+    width: 100%;
+    flex: 1;
+    display: flex;
+  }
+  
+  /* Left side - Questions & Answers (75% of screen) */
+  .question-left-panel {
+    width: 75%;
+    padding-right: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .exam-question-text{
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #0f172a;
+    margin-bottom: 15px;
+    padding: 0;
+    width: 100%;
+    max-height: 80px;
+    overflow-y: auto;
+  }
+  
+  /* Exam Answers - No immediate feedback */
+  .exam-answers-container{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 10px;
+    flex: 1;
+  }
+  
+  .exam-answer-item{
+    padding: 12px 16px;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+    font-size: 15px;
+    line-height: 1.4;
+    width: 100%;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .exam-answer-item:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-color: var(--accent);
+    background-color: #f8fafc;
+  }
+  
+  /* Exam mode - selected answer styling */
+  .exam-answer-item.selected {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+  }
+  
+  .exam-answer-number{
+    font-weight: 600;
+    margin-right: 10px;
+    color: var(--accent);
+    font-size: 15px;
+    min-width: 25px;
+  }
+  
+  /* Exam Feedback - Hidden */
+  .exam-feedback{
+    padding: 0 10px;
+    margin-bottom: 15px;
+    text-align: center;
+    min-height: 25px;
+  }
+  
+  /* Right side - Exam Controls (25% of screen) */
+  .exam-right-panel {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 20px;
+    border-left: 1px solid #e2e8f0;
+    height: 100%;
+  }
+  
+  /* Exam Countdown */
+  .exam-countdown {
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--danger);
+    margin-bottom: 15px;
+    padding: 8px;
+    background: #fee2e2;
+    border-radius: 6px;
+  }
+  
+  /* Exam Test Boxes Grid - 5 per row in exam mode */
+  .exam-test-boxes {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    width: 100%;
+    height: calc(100vh - 150px);
+    padding: 15px 10px;
+    overflow-y: auto;
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+  
+  .test-box {
+    width: 100%;
+    aspect-ratio: 1;
+    min-width: 45px;
+    min-height: 45px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .test-box:hover {
+    transform: scale(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  
+  .test-box.answered {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #94a3b8;
+  }
+  
+  .test-box.current {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    transform: scale(1.1);
+  }
+  
+  /* Exam Navigation Container - Under Last Question */
+  .exam-navigation-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    padding: 15px 0;
+    border-top: 1px solid #e2e8f0;
   }
   
   /* Results History Grid */
@@ -534,16 +700,6 @@
     100% { opacity: 1; }
   }
   
-  .online-text {
-    font-size: 14px;
-    color: #64748b;
-  }
-  
-  #onlineCount {
-    font-weight: 600;
-    color: var(--accent);
-  }
-  
   /* Chat Button */
   .chat-button {
     background: var(--accent);
@@ -566,13 +722,14 @@
     box-shadow: 0 6px 16px rgba(14, 165, 164, 0.4);
   }
   
-  /* Smaller Chat Window */
+  /* Larger Chat Window - 80% of screen height */
   .chat-window {
     position: absolute;
     bottom: 70px;
     left: 0;
     width: 600px;
-    height: 1000px;
+    height: 80vh;
+    max-height: 800px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.15);
@@ -594,6 +751,7 @@
     justify-content: space-between;
     align-items: center;
     font-size: 14px;
+    flex-shrink: 0;
   }
   
   .close-chat {
@@ -617,6 +775,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-height: 0;
   }
   
   .message {
@@ -670,6 +829,7 @@
     border-top: 1px solid #e2e8f0;
     display: flex;
     gap: 8px;
+    flex-shrink: 0;
   }
   
   .chat-input {
@@ -703,6 +863,13 @@
   <!-- Timer -->
   <div id="timer"></div>
   
+  <!-- Question Counter - Bottom Right Corner (Visible in normal mode) -->
+  <div id="questionCounter" class="question-counter hidden">
+    <div id="currentQuestion" class="current-question">1</div>
+    <div class="counter-separator">/</div>
+    <div id="totalQuestions" class="total-questions">0</div>
+  </div>
+  
   <!-- Chat and Online Status Container -->
   <div class="bottom-left-container">
     <!-- Chat Button -->
@@ -719,7 +886,7 @@
       <span class="online-text">ონლაინ არის: <span id="onlineCount">0</span></span>
     </div>
     
-    <!-- Chat Window -->
+    <!-- Chat Window - 80% height -->
     <div id="chatWindow" class="chat-window">
       <div class="chat-header">
         <span>ჩატი</span>
@@ -773,31 +940,59 @@
 
     <!-- Test Screen -->
     <div id="testScreen" class="test-screen">
-      <div class="question-container">
+      <!-- Normal Mode Container (full width) -->
+      <div id="normalModeContainer" class="normal-mode-container hidden">
+        <div id="questionText" class="question-text">იტვირთება...</div>
+        
+        <div id="answersContainer" class="answers-container"></div>
+        
+        <div id="feedback" class="feedback"></div>
+        
+        <div class="navigation">
+          <div class="nav-center">
+            <button id="prevBtn" class="nav-btn">
+              <svg class="vector-arrow prev" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              წინა
+            </button>
+            <button id="nextBtn" class="nav-btn">
+              შემდეგი
+              <svg class="vector-arrow next" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button id="autoBtn" class="nav-btn auto-btn">Auto</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Exam Mode Container (split layout) -->
+      <div id="examModeContainer" class="exam-mode-container hidden">
         <!-- Left Panel: Questions & Answers (75%) -->
         <div class="question-left-panel">
-          <div id="questionText" class="question-text">იტვირთება...</div>
+          <div id="examQuestionText" class="exam-question-text">იტვირთება...</div>
           
-          <div id="answersContainer" class="answers-container"></div>
+          <div id="examAnswersContainer" class="exam-answers-container"></div>
           
-          <div id="feedback" class="feedback"></div>
+          <div id="examFeedback" class="exam-feedback"></div>
           
           <!-- Navigation moved here, under last question -->
-          <div class="navigation-container">
+          <div class="exam-navigation-container">
             <div class="nav-center">
-              <button id="prevBtn" class="nav-btn">
+              <button id="examPrevBtn" class="nav-btn">
                 <svg class="vector-arrow prev" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M15 18L9 12L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 წინა
               </button>
-              <button id="nextBtn" class="nav-btn">
+              <button id="examNextBtn" class="nav-btn">
                 შემდეგი
                 <svg class="vector-arrow next" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
-              <button id="autoBtn" class="nav-btn auto-btn">Auto</button>
+              <button id="examAutoBtn" class="nav-btn auto-btn">Auto</button>
             </div>
           </div>
         </div>
@@ -807,7 +1002,7 @@
           <!-- Countdown Timer -->
           <div id="examCountdown" class="exam-countdown">03:00:00</div>
           
-          <!-- Test Boxes Grid - 10 per row -->
+          <!-- Test Boxes Grid - 5 per row -->
           <div id="examTestBoxes" class="exam-test-boxes"></div>
         </div>
       </div>
@@ -933,6 +1128,7 @@ let sessionTests = [];
 let currentIndex = 0;
 let autoMode = false;
 let prevBtn, nextBtn, autoBtn;
+let examPrevBtn, examNextBtn, examAutoBtn;
 let examMode = false;
 let examTimeRemaining = 3 * 60 * 60; // 3 hours in seconds
 let examTimerInterval = null;
@@ -940,6 +1136,7 @@ let onlineUsers = 1;
 let currentUserGuestNumber = 1;
 let nextGuestNumber = 2;
 let examResults = []; // Store exam results
+let isEditingQuestionNumber = false;
 
 /* ----------------- DOM Elements ----------------- */
 const optionsScreen = document.getElementById('optionsScreen');
@@ -952,11 +1149,20 @@ const timerElement = document.getElementById('timer');
 const examRightPanel = document.getElementById('examRightPanel');
 const examCountdown = document.getElementById('examCountdown');
 const examTestBoxes = document.getElementById('examTestBoxes');
+const questionCounter = document.getElementById('questionCounter');
+const currentQuestionEl = document.getElementById('currentQuestion');
+const totalQuestionsEl = document.getElementById('totalQuestions');
 
 const modeSequential = document.getElementById('modeSequential');
 const modeShuffleQuestions = document.getElementById('modeShuffleQuestions');
 const modeShuffleAnswers = document.getElementById('modeShuffleAnswers');
 const modeExam = document.getElementById('modeExam');
+
+const normalModeContainer = document.getElementById('normalModeContainer');
+const examModeContainer = document.getElementById('examModeContainer');
+const examQuestionText = document.getElementById('examQuestionText');
+const examAnswersContainer = document.getElementById('examAnswersContainer');
+const examFeedback = document.getElementById('examFeedback');
 
 // Chat elements
 const chatButton = document.getElementById('chatButton');
@@ -969,13 +1175,6 @@ const onlineCount = document.getElementById('onlineCount');
 
 /* ----------------- Timer Functions ----------------- */
 function updateTimer() {
-  if (examMode) {
-    // Hide clock in exam mode
-    timerElement.style.display = 'none';
-    return;
-  }
-  
-  timerElement.style.display = 'block';
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -1149,13 +1348,18 @@ function startExamMode() {
   examTimeRemaining = 3 * 60 * 60; // 3 hours
   examResults = []; // Clear previous results
   
-  // Hide regular clock
-  timerElement.style.display = 'none';
+  // Hide regular clock (optional - you can keep it if you want)
+  // timerElement.style.display = 'none';
   
-  // Show exam right panel
+  // Show exam containers and hide normal containers
+  normalModeContainer.classList.add('hidden');
+  examModeContainer.classList.remove('hidden');
   examRightPanel.classList.remove('hidden');
   
-  // Create test boxes (10 per row)
+  // Hide question counter in exam mode
+  questionCounter.classList.add('hidden');
+  
+  // Create test boxes (5 per row in exam mode)
   createExamTestBoxes();
   
   // Start exam timer
@@ -1259,6 +1463,8 @@ function loadCSV() {
       showNotification('ვერ მოიძებნა ტესტები. შეამოწმეთ CSV ფაილი.');
       return;
     }
+    
+    totalQuestionsEl.textContent = allTests.length;
   }).catch(err => {
     questionText.textContent = 'შეცდომა ფაილის ჩატვირთვისას: ' + err.message;
     showNotification('შეცდომა ფაილის ჩატვირთვისას: ' + err.message);
@@ -1336,6 +1542,16 @@ startBtn.addEventListener('click', () => {
   
   if (examMode) {
     startExamMode();
+  } else {
+    // Normal mode: show normal container, hide exam container
+    normalModeContainer.classList.remove('hidden');
+    examModeContainer.classList.add('hidden');
+    examRightPanel.classList.add('hidden');
+    
+    // Show question counter in normal mode
+    questionCounter.classList.remove('hidden');
+    currentQuestionEl.textContent = currentIndex + 1;
+    totalQuestionsEl.textContent = sessionTests.length;
   }
   
   renderCurrentQuestion();
@@ -1346,13 +1562,38 @@ function renderCurrentQuestion() {
   if (!sessionTests.length) return;
   
   const question = sessionTests[currentIndex];
-  questionText.textContent = question.question;
   
   if (examMode) {
+    // Update exam question
+    examQuestionText.textContent = question.question;
+    
     // Update exam test boxes
     createExamTestBoxes();
+    
+    // Render exam answers
+    renderExamAnswers();
+  } else {
+    // Update normal question
+    questionText.textContent = question.question;
+    
+    // Update question counter
+    currentQuestionEl.textContent = currentIndex + 1;
+    totalQuestionsEl.textContent = sessionTests.length;
+    
+    // Reset editing mode
+    if (isEditingQuestionNumber) {
+      currentQuestionEl.classList.remove('editing');
+      isEditingQuestionNumber = false;
+    }
+    
+    // Render normal answers
+    renderNormalAnswers();
   }
-  
+}
+
+/* ----------------- Render Normal Mode Answers ----------------- */
+function renderNormalAnswers() {
+  const question = sessionTests[currentIndex];
   answersContainer.innerHTML = '';
   feedback.innerHTML = '';
   
@@ -1371,10 +1612,9 @@ function renderCurrentQuestion() {
       
       if (wasSelected) {
         answerEl.classList.add('selected');
-        // In exam mode, don't show correct/incorrect immediately
-        if (!examMode && answer.correct) {
+        if (answer.correct) {
           answerEl.classList.add('correct');
-        } else if (!examMode && !answer.correct) {
+        } else {
           answerEl.classList.add('incorrect');
         }
       }
@@ -1391,41 +1631,26 @@ function renderCurrentQuestion() {
           question.selectedAnswers = [];
         }
         
-        // Clear previous selections (single choice)
-        question.selectedAnswers = [idx];
-        
-        // Mark the answer as selected
         question.selectedAnswers.push(idx);
         
-        // Store whether the answer is correct (for later results)
-        question.isAnswerCorrect = answer.correct;
+        answerEl.classList.add('selected');
         
-        // In exam mode, just show selection without feedback
-        if (examMode) {
-          // Just select the answer, no immediate feedback
-          answerEl.classList.add('selected');
-          feedback.innerHTML = '';
-        } else {
-          // Normal mode with immediate feedback
-          answerEl.classList.add('selected');
-          
-          if (answer.correct) {
-            answerEl.classList.add('correct');
-            if (!question.hasCorrectAnswer) {
-              question.hasCorrectAnswer = true;
-            }
-            feedback.innerHTML = `<div style="color:var(--success); font-size:16px; font-weight:600;">✓ სწორი პასუხი!</div>`;
-            
-            if (autoMode && currentIndex < sessionTests.length - 1) {
-              setTimeout(() => {
-                currentIndex++;
-                renderCurrentQuestion();
-              }, 500);
-            }
-          } else {
-            answerEl.classList.add('incorrect');
-            feedback.innerHTML = `<div style="color:var(--danger); font-size:16px; font-weight:600;">✗ არასწორი პასუხი</div>`;
+        if (answer.correct) {
+          answerEl.classList.add('correct');
+          if (!question.hasCorrectAnswer) {
+            question.hasCorrectAnswer = true;
           }
+          feedback.innerHTML = `<div style="color:var(--success); font-size:16px; font-weight:600;">✓ სწორი პასუხი!</div>`;
+          
+          if (autoMode && currentIndex < sessionTests.length - 1) {
+            setTimeout(() => {
+              currentIndex++;
+              renderCurrentQuestion();
+            }, 500);
+          }
+        } else {
+          answerEl.classList.add('incorrect');
+          feedback.innerHTML = `<div style="color:var(--danger); font-size:16px; font-weight:600;">✗ არასწორი პასუხი</div>`;
         }
         
         renderCurrentQuestion();
@@ -1446,6 +1671,72 @@ function renderCurrentQuestion() {
   updateAutoButton();
 }
 
+/* ----------------- Render Exam Mode Answers ----------------- */
+function renderExamAnswers() {
+  const question = sessionTests[currentIndex];
+  examAnswersContainer.innerHTML = '';
+  examFeedback.innerHTML = '';
+  
+  // Check if question has correct answer selected
+  const hasCorrect = question.selectedAnswers && question.selectedAnswers.some(idx => 
+    question.answers[idx]?.correct
+  );
+  
+  // Create answer elements
+  if (question.answers && question.answers.length > 0) {
+    question.answers.forEach((answer, idx) => {
+      const answerEl = document.createElement('div');
+      answerEl.className = 'exam-answer-item';
+      
+      const wasSelected = question.selectedAnswers && question.selectedAnswers.includes(idx);
+      
+      if (wasSelected) {
+        answerEl.classList.add('selected');
+      }
+      
+      answerEl.innerHTML = `
+        <span class="exam-answer-number">${idx + 1}.</span>
+        <span class="answer-text">${escapeHtml(answer.text)}</span>
+      `;
+      
+      answerEl.addEventListener('click', () => {
+        if (wasSelected) return;
+        
+        if (!question.selectedAnswers) {
+          question.selectedAnswers = [];
+        }
+        
+        // Clear previous selections (single choice)
+        question.selectedAnswers = [idx];
+        
+        // Mark the answer as selected
+        question.selectedAnswers.push(idx);
+        
+        // Store whether the answer is correct (for later results)
+        question.isAnswerCorrect = answer.correct;
+        
+        // In exam mode, just show selection without feedback
+        answerEl.classList.add('selected');
+        examFeedback.innerHTML = '';
+        
+        renderCurrentQuestion();
+      });
+      
+      examAnswersContainer.appendChild(answerEl);
+    });
+  } else {
+    examAnswersContainer.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px;">პასუხები არ მოიძებნა</div>';
+  }
+  
+  // Update navigation buttons
+  if (examPrevBtn && examNextBtn) {
+    examPrevBtn.disabled = currentIndex === 0;
+    examNextBtn.disabled = currentIndex === sessionTests.length - 1;
+  }
+  
+  updateExamAutoButton();
+}
+
 /* ----------------- Update Auto Button ----------------- */
 function updateAutoButton() {
   if (!autoBtn || !nextBtn) return;
@@ -1459,11 +1750,27 @@ function updateAutoButton() {
   }
 }
 
+function updateExamAutoButton() {
+  if (!examAutoBtn || !examNextBtn) return;
+  
+  if (autoMode) {
+    examNextBtn.classList.add('vanish-effect');
+    examAutoBtn.textContent = 'გამორთე Auto';
+  } else {
+    examNextBtn.classList.remove('vanish-effect');
+    examAutoBtn.textContent = 'Auto';
+  }
+}
+
 /* ----------------- Navigation ----------------- */
 function bindNavigationEvents() {
   prevBtn = document.getElementById('prevBtn');
   nextBtn = document.getElementById('nextBtn');
   autoBtn = document.getElementById('autoBtn');
+  
+  examPrevBtn = document.getElementById('examPrevBtn');
+  examNextBtn = document.getElementById('examNextBtn');
+  examAutoBtn = document.getElementById('examAutoBtn');
   
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
@@ -1491,8 +1798,138 @@ function bindNavigationEvents() {
     autoBtn.addEventListener('click', () => {
       autoMode = !autoMode;
       updateAutoButton();
+      updateExamAutoButton();
     });
   }
+  
+  if (examPrevBtn) {
+    examPrevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderCurrentQuestion();
+      }
+    });
+  }
+  
+  if (examNextBtn) {
+    examNextBtn.addEventListener('click', () => {
+      if (currentIndex < sessionTests.length - 1) {
+        currentIndex++;
+        renderCurrentQuestion();
+      } else if (examMode) {
+        completeExam();
+      }
+    });
+  }
+  
+  if (examAutoBtn) {
+    examAutoBtn.addEventListener('click', () => {
+      autoMode = !autoMode;
+      updateAutoButton();
+      updateExamAutoButton();
+    });
+  }
+}
+
+/* ----------------- Question Counter Click - Simple Edit ----------------- */
+function bindQuestionCounterEvent() {
+  if (!currentQuestionEl) return;
+  
+  currentQuestionEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    
+    if (isEditingQuestionNumber || examMode) return;
+    
+    isEditingQuestionNumber = true;
+    currentQuestionEl.classList.add('editing');
+    
+    const originalValue = currentQuestionEl.textContent;
+    
+    // Create input for editing
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = originalValue;
+    input.min = 1;
+    input.max = sessionTests.length;
+    input.style.cssText = `
+      width: 60px;
+      height: 40px;
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      border: none;
+      background: transparent;
+      color: var(--success);
+      outline: none;
+      padding: 0;
+      margin: 0;
+      -moz-appearance: textfield;
+    `;
+    
+    // Remove spinner arrows in Webkit browsers
+    input.style.webkitAppearance = 'none';
+    input.style.margin = '0';
+    
+    // Store the original display
+    const originalDisplay = currentQuestionEl.style.display;
+    currentQuestionEl.style.display = 'none';
+    
+    // Create a container for the input
+    const inputContainer = document.createElement('div');
+    inputContainer.style.cssText = `
+      display: inline-block;
+      min-width: 50px;
+      text-align: center;
+    `;
+    inputContainer.appendChild(input);
+    
+    // Insert input where the number was
+    currentQuestionEl.parentNode.insertBefore(inputContainer, currentQuestionEl.nextSibling);
+    
+    input.focus();
+    input.select();
+    
+    const handleInputComplete = () => {
+      const value = parseInt(input.value);
+      if (value >= 1 && value <= sessionTests.length) {
+        currentIndex = value - 1;
+        
+        // Remove input and restore original element
+        inputContainer.remove();
+        currentQuestionEl.style.display = originalDisplay;
+        currentQuestionEl.textContent = value;
+        currentQuestionEl.classList.remove('editing');
+        isEditingQuestionNumber = false;
+        
+        renderCurrentQuestion();
+      } else {
+        // Remove input and restore original element
+        inputContainer.remove();
+        currentQuestionEl.style.display = originalDisplay;
+        currentQuestionEl.classList.remove('editing');
+        isEditingQuestionNumber = false;
+        
+        showNotification('გთხოვთ შეიყვანოთ ნომერი 1-დან ' + sessionTests.length + '-მდე');
+      }
+    };
+    
+    input.addEventListener('blur', handleInputComplete);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        handleInputComplete();
+      }
+    });
+    
+    // Handle escape key
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        inputContainer.remove();
+        currentQuestionEl.style.display = originalDisplay;
+        currentQuestionEl.classList.remove('editing');
+        isEditingQuestionNumber = false;
+      }
+    });
+  });
 }
 
 /* ----------------- Show Completion Screen ----------------- */
@@ -1518,6 +1955,7 @@ function showCompletionScreen() {
   const questionContainer = document.querySelector('.question-container');
   questionContainer.innerHTML = completionHTML;
   examRightPanel.classList.add('hidden');
+  questionCounter.classList.add('hidden');
   
   document.getElementById('restartBtn').addEventListener('click', () => {
     location.reload();
@@ -1537,6 +1975,15 @@ window.addEventListener('DOMContentLoaded', () => {
   
   // Bind events
   bindNavigationEvents();
+  bindQuestionCounterEvent();
+  
+  // Click outside to cancel editing
+  document.addEventListener('click', (e) => {
+    if (isEditingQuestionNumber && currentQuestionEl && !currentQuestionEl.contains(e.target)) {
+      isEditingQuestionNumber = false;
+      renderCurrentQuestion();
+    }
+  });
   
   // Check for incompatible modes
   if (modeSequential) {
