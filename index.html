@@ -32,6 +32,7 @@
     padding: 10px;
   }
   
+  
   /* Exam mode - smaller question font on mobile */
   .exam-question-text {
     font-size: 16px !important;
@@ -54,6 +55,10 @@
     border-top: none !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
+  background: transparent !important;
+    box-shadow: none !important;
+    border-top: none !important;
+
   }
   
   .nav-center {
@@ -86,24 +91,34 @@
     z-index: 1001 !important; /* Above navigation */
   }
   
-  /* 3. Question counter in bottom-left container */
+/* 3. Question counter in bottom-left container */
   .question-counter {
     position: static !important;
     bottom: auto !important;
     right: auto !important;
-    font-size: 16px !important;
+    font-size: 5px !important; /* ← Changed from 16px to 20px */
     padding: 0 !important;
     background: transparent !important;
     margin: 0 !important;
     flex: 1 !important;
     text-align: center !important;
-    order: 2 !important; /* Middle position */
+    order: 2 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
   
   .question-counter .current-question,
   .question-counter .counter-separator,
   .question-counter .total-questions {
-    font-size: 16px !important;
+    font-size: 20px !important;
+  }
+  
+    /* NEW: Add these specific overrides */
+  .bottom-left-container .question-counter .counter-separator,
+  .bottom-left-container .question-counter .total-questions {
+    font-size: 20px !important; /* Force mobile size */
+    color: #64748b !important;
   }
   
   /* 4. Chat button - Left side */
@@ -150,11 +165,11 @@
     display: none !important;
   }
   
-  /* 9. Show the question counter in bottom-left container */
-  .bottom-left-container .question-counter {
-    display: flex !important;
-    justify-content: center !important;
-  }
+/* 9. Show the question counter in bottom-left container */
+.bottom-left-container .question-counter {
+  display: flex !important;
+  justify-content: center !important;
+}
   
   /* 10. Adjust online status layout */
   .online-status {
@@ -418,21 +433,21 @@
   }
   
   /* Question Counter - Bottom Right Corner */
-  .question-counter {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--accent);
-    z-index: 998;
-    display: flex;
-    align-items: baseline;
-    gap: 2px;
-    background: transparent;
-    padding: 0;
-    cursor: pointer;
-  }
+.question-counter {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--accent);
+  z-index: 998;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
   
   .question-counter .counter-separator {
     font-size: 28px;
@@ -859,17 +874,28 @@
     color: #991b1b;
   }
   
-  /* Chat and Online Status */
-  .bottom-left-container {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 15px;
-  }
+/* Chat and Online Status */
+.bottom-left-container {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+}
+
+/* On desktop, the counter inside bottom-left-container should be hidden */
+.bottom-left-container .question-counter {
+  display: none;
+}
+
+/* On desktop, show the main question counter when not in exam mode */
+#questionCounter:not(.hidden) {
+  display: flex !important;
+}
+
   
   /* Online Status - Clean version */
   .online-status {
@@ -1134,63 +1160,51 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   
-  <!-- Timer -->
-  <div id="timer"></div>
+<!-- Timer -->
+<div id="timer"></div>
+
+<!-- Chat and Online Status Container -->
+<div class="bottom-left-container">
+  <!-- Chat Button -->
+  <button id="chatButton" class="chat-button">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
+    </svg>
+    ჩატი
+  </button>
   
   <!-- Question Counter - Bottom Right Corner (Visible in normal mode) -->
-  <div id="questionCounter" class="question-counter hidden">
-    <div id="currentQuestion" class="current-question">1</div>
-    <div class="counter-separator">/</div>
-    <div id="totalQuestions" class="total-questions">0</div>
-  </div>
-  
-  <!-- Chat and Online Status Container -->
-  <div class="bottom-left-container">
-    <!-- Chat Button -->
-    <button id="chatButton" class="chat-button">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
-      </svg>
-      ჩატი
-    </button>
-    
-<!-- Online Status - Next to chat button -->
-<div class="online-status">
-  <div class="online-dot"></div>
-  <span class="online-text">ონლაინ: <span id="onlineCount">1</span></span>
+<div id="questionCounter" class="question-counter hidden">
+  <div id="currentQuestion" class="current-question">1</div>
+  <div class="counter-separator">/</div>
+  <div id="totalQuestions" class="total-questions">0</div>
 </div>
-    
-    <!-- Chat Window - 80% height -->
-    <div id="chatWindow" class="chat-window">
-      <div class="chat-header">
-        <span>ჩატი</span>
-        <button class="close-chat">×</button>
-      </div>
-      <div id="chatMessages" class="chat-messages">
-        <!-- Messages will be inserted here -->
-      </div>
-      <div class="chat-input-area">
-        <input type="text" id="chatInput" class="chat-input" placeholder="დაწერეთ...">
-        <button id="sendBtn" class="send-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="white"/>
-          </svg>
-        </button>
-      </div>
-    </div>
+
+  <!-- Online Status - Next to chat button -->
+  <div class="online-status">
+    <div class="online-dot"></div>
+    <span class="online-text">ონლაინ: <span id="onlineCount">1</span></span>
   </div>
   
-  <!-- Modal for Exam Finish Confirmation -->
-  <div id="finishExamModal" class="modal-overlay">
-    <div class="modal">
-      <div class="modal-header">გამოცდის დასრულება</div>
-      <div class="modal-content">ნამდვილად გსურთ დასრულება, თუ გინდათ გადახედოთ ტესტს?</div>
-      <div class="modal-buttons">
-        <button id="confirmFinishBtn" class="modal-btn confirm">დიახ, დახურვა</button>
-        <button id="cancelFinishBtn" class="modal-btn cancel">გადახედვა</button>
-      </div>
+  <!-- Chat Window - 80% height -->
+  <div id="chatWindow" class="chat-window">
+    <div class="chat-header">
+      <span>ჩატი</span>
+      <button class="close-chat">×</button>
+    </div>
+    <div id="chatMessages" class="chat-messages">
+      <!-- Messages will be inserted here -->
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" class="chat-input" placeholder="დაწერეთ...">
+      <button id="sendBtn" class="send-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="white"/>
+        </svg>
+      </button>
     </div>
   </div>
+</div>
   
   <!-- Modal for Detailed Results -->
   <div id="detailedResultsModal" class="modal-overlay">
@@ -2339,6 +2353,7 @@ function renderNormalAnswers() {
   } else {
     answersContainer.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px;">პასუხები არ მოიძებნა</div>';
   }
+  
   
   // Update navigation buttons
   if (prevBtn && nextBtn) {
