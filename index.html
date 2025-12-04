@@ -1,0 +1,1572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ტესტები</title>
+<style>
+  :root{
+    --bg:#f6f8fb; --muted:#6b7280; --accent:#0ea5a4;
+    --success:#16a34a; --danger:#dc2626;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  html,body{
+    height:100%;
+    font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: #f8fafc;
+  }
+  body{
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    position: relative;
+  }
+  
+  /* Notification */
+  .notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--danger);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    z-index: 1000;
+    animation: slideIn 0.3s ease, fadeOut 0.3s ease 3.7s;
+    max-width: 600px;
+    text-align: center;
+  }
+  
+  @keyframes slideIn {
+    from {
+      top: -60px;
+      opacity: 0;
+    }
+    to {
+      top: 20px;
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+  
+  /* Timer - Hide in exam mode */
+  #timer {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    z-index: 999;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+  
+  /* Container */
+  .container{
+    width: 100%;
+    margin: 0 auto;
+    flex: 1;
+  }
+  
+  /* Options Screen */
+  .options-screen {
+    background: white;
+    border-radius: 10px;
+    padding: 30px 40px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    margin: 0 auto;
+    width: 100%;
+    max-width: 800px;
+  }
+  .mode-label{
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #1e293b;
+  }
+  .option-item{
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+  }
+  .option-item:hover{
+    background-color: #f1f5f9;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .option-item input[type="checkbox"]{
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  .option-item span{
+    font-size: 16px;
+    color: #334155;
+    flex: 1;
+  }
+  .mode-separator {
+    text-align: center;
+    margin: 30px 0;
+    color: var(--muted);
+    font-weight: 600;
+    position: relative;
+  }
+  .mode-separator::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e2e8f0;
+    z-index: 1;
+  }
+  .mode-separator span {
+    background: white;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+  }
+  .start-btn{
+    display: block;
+    width: 180px;
+    margin: 35px auto 0;
+    padding: 14px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .start-btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(14, 165, 164, 0.25);
+  }
+  
+  /* Test Screen */
+  .test-screen{
+    display: none;
+    width: 100%;
+    height: 100%;
+  }
+  .test-screen.active{
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Vector arrows */
+  .vector-arrow {
+    display: inline-block;
+    vertical-align: middle;
+    transition: transform 0.2s;
+  }
+  
+  .vector-arrow.prev {
+    margin-right: 8px;
+  }
+  
+  .vector-arrow.next {
+    margin-left: 8px;
+  }
+  
+  .nav-btn:hover .vector-arrow.prev {
+    transform: translateX(-3px);
+  }
+  
+  .nav-btn:hover .vector-arrow.next {
+    transform: translateX(3px);
+  }
+  
+  /* Auto vanishing effect */
+  @keyframes vanish {
+    0% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+  }
+  
+  .vanish-effect {
+    animation: vanish 0.5s ease forwards !important;
+  }
+  
+  /* Question Container - Modified for Exam Mode */
+  .question-container{
+    width: 100%;
+    flex: 1;
+    display: flex;
+  }
+  
+  /* Left side - Questions & Answers (75% of screen) */
+  .question-left-panel {
+    width: 75%;
+    padding-right: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .question-text{
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #0f172a;
+    margin-bottom: 15px;
+    padding: 0;
+    width: 100%;
+    max-height: 80px;
+    overflow-y: auto;
+  }
+  
+  /* Answers - Exam Mode (no immediate feedback) */
+  .answers-container{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 10px;
+    flex: 1;
+  }
+  
+  .answer-item{
+    padding: 12px 16px;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+    font-size: 15px;
+    line-height: 1.4;
+    width: 100%;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .answer-item:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-color: var(--accent);
+    background-color: #f8fafc;
+  }
+  
+  /* Exam mode - selected answer styling */
+  .answer-item.selected {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+  }
+  
+  .answer-number{
+    font-weight: 600;
+    margin-right: 10px;
+    color: var(--accent);
+    font-size: 15px;
+    min-width: 25px;
+  }
+  
+  /* Feedback - Hidden in exam mode */
+  .feedback{
+    padding: 0 10px;
+    margin-bottom: 15px;
+    text-align: center;
+    min-height: 25px;
+  }
+  
+  /* Right side - Exam Controls (25% of screen) */
+  .exam-right-panel {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 20px;
+    border-left: 1px solid #e2e8f0;
+    height: 100%;
+  }
+  
+  /* Exam Countdown */
+  .exam-countdown {
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--danger);
+    margin-bottom: 15px;
+    padding: 8px;
+    background: #fee2e2;
+    border-radius: 6px;
+  }
+  
+  /* Exam Test Boxes Grid - 10 per row with clear divisions */
+  .exam-test-boxes {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    width: 100%;
+    height: calc(100vh - 150px);
+    padding: 15px 10px;
+    overflow-y: auto;
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+  
+  .test-box {
+    width: 100%;
+    aspect-ratio: 1;
+    min-width: 35px;
+    min-height: 35px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  /* Clear separation between boxes */
+  .test-box + .test-box {
+    margin-left: 0;
+  }
+  
+  .test-box:hover {
+    transform: scale(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  
+  .test-box.answered {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #94a3b8;
+  }
+  
+  .test-box.current {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    transform: scale(1.1);
+  }
+  
+  /* Navigation Container - Under Last Question */
+  .navigation-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    padding: 15px 0;
+    border-top: 1px solid #e2e8f0;
+  }
+  
+  .nav-center {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .nav-btn {
+    padding: 10px 24px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .auto-btn{
+    background: #f59e0b;
+  }
+  
+  .auto-btn:hover{
+    background: #d97706;
+  }
+  
+  .nav-btn:disabled{
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .nav-btn:hover:not(:disabled){
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+  
+  /* Results History Grid */
+  .results-history {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .result-item {
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid;
+    background: #f8fafc;
+  }
+  
+  .result-item.correct {
+    border-left-color: var(--success);
+  }
+  
+  .result-item.incorrect {
+    border-left-color: var(--danger);
+  }
+  
+  .result-question {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  
+  .result-answer {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 5px;
+  }
+  
+  .result-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  
+  .result-status.correct {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  
+  .result-status.incorrect {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  
+  /* Chat and Online Status */
+  .bottom-left-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  /* Online Status - Clean version */
+  .online-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .online-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: pulse-online 2s infinite;
+  }
+  
+  .online-text {
+    font-size: 14px;
+    color: #64748b;
+  }
+  
+  #onlineCount {
+    font-weight: 600;
+    color: var(--accent);
+  }
+  
+  @keyframes pulse-online {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+  
+  .online-text {
+    font-size: 14px;
+    color: #64748b;
+  }
+  
+  #onlineCount {
+    font-weight: 600;
+    color: var(--accent);
+  }
+  
+  /* Chat Button */
+  .chat-button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(14, 165, 164, 0.3);
+    transition: all 0.3s;
+  }
+  
+  .chat-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(14, 165, 164, 0.4);
+  }
+  
+  /* Smaller Chat Window */
+  .chat-window {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    width: 600px;
+    height: 1000px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .chat-window.active {
+    display: flex;
+  }
+  
+  .chat-header {
+    padding: 12px 16px;
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+  }
+  
+  .close-chat {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .message {
+    max-width: 85%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .message.received {
+    align-self: flex-start;
+  }
+  
+  .message.sent {
+    align-self: flex-end;
+  }
+  
+  .message-author {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 2px;
+    padding: 0 4px;
+  }
+  
+  .message-time {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+    padding: 0 4px;
+  }
+  
+  .message-content {
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  
+  .message.received .message-content {
+    background: #f1f5f9;
+    color: #1e293b;
+  }
+  
+  .message.sent .message-content {
+    background: var(--accent);
+    color: white;
+  }
+  
+  .chat-input-area {
+    padding: 12px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 8px;
+  }
+  
+  .chat-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+  
+  .send-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Hidden class */
+  .hidden{
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <!-- Timer -->
+  <div id="timer"></div>
+  
+  <!-- Chat and Online Status Container -->
+  <div class="bottom-left-container">
+    <!-- Chat Button -->
+    <button id="chatButton" class="chat-button">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
+      </svg>
+      ჩატი
+    </button>
+    
+    <!-- Online Status - Next to chat button -->
+    <div class="online-status">
+      <div class="online-dot"></div>
+      <span class="online-text">ონლაინ არის: <span id="onlineCount">0</span></span>
+    </div>
+    
+    <!-- Chat Window -->
+    <div id="chatWindow" class="chat-window">
+      <div class="chat-header">
+        <span>ჩატი</span>
+        <button class="close-chat">×</button>
+      </div>
+      <div id="chatMessages" class="chat-messages">
+        <!-- Messages will be inserted here -->
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" class="chat-input" placeholder="შეიყვანეთ თქვენი შეტყობინება...">
+        <button id="sendBtn" class="send-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="white"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container">
+    <!-- Options Screen -->
+    <div id="optionsScreen" class="options-screen">
+      <div class="mode-label">აირჩიეთ რეჟიმი:</div>
+      
+      <label class="option-item">
+        <input type="checkbox" id="modeSequential" checked>
+        <span>ტესტების ჩვენება თანმიმდევრულად</span>
+      </label>
+      
+      <label class="option-item">
+        <input type="checkbox" id="modeShuffleQuestions">
+        <span>ტესტების არევა</span>
+      </label>
+      
+      <label class="option-item">
+        <input type="checkbox" id="modeShuffleAnswers">
+        <span>პასუხების არევა</span>
+      </label>
+      
+      <div class="mode-separator">
+        <span>საგამოცდო რეჟიმი</span>
+      </div>
+      
+      <label class="option-item">
+        <input type="checkbox" id="modeExam">
+        <span>საგამოცდო რეჟიმი (200 შემთხვევითი ტესტი, 3 საათი)</span>
+      </label>
+      
+      <button id="startBtn" class="start-btn">დაწყება</button>
+    </div>
+
+    <!-- Test Screen -->
+    <div id="testScreen" class="test-screen">
+      <div class="question-container">
+        <!-- Left Panel: Questions & Answers (75%) -->
+        <div class="question-left-panel">
+          <div id="questionText" class="question-text">იტვირთება...</div>
+          
+          <div id="answersContainer" class="answers-container"></div>
+          
+          <div id="feedback" class="feedback"></div>
+          
+          <!-- Navigation moved here, under last question -->
+          <div class="navigation-container">
+            <div class="nav-center">
+              <button id="prevBtn" class="nav-btn">
+                <svg class="vector-arrow prev" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15 18L9 12L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                წინა
+              </button>
+              <button id="nextBtn" class="nav-btn">
+                შემდეგი
+                <svg class="vector-arrow next" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button id="autoBtn" class="nav-btn auto-btn">Auto</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Panel: Exam Controls (25%) -->
+        <div id="examRightPanel" class="exam-right-panel hidden">
+          <!-- Countdown Timer -->
+          <div id="examCountdown" class="exam-countdown">03:00:00</div>
+          
+          <!-- Test Boxes Grid - 10 per row -->
+          <div id="examTestBoxes" class="exam-test-boxes"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ----------------- Utility functions ----------------- */
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function shuffleArray(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+
+/* ----------------- Show Notification ----------------- */
+function showNotification(message, isError = true) {
+  const existing = document.querySelector('.notification');
+  if (existing) existing.remove();
+  
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.textContent = message;
+  notification.style.background = isError ? 'var(--danger)' : 'var(--success)';
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  }, 4000);
+}
+
+/* ----------------- Robust CSV first-column extractor ----------------- */
+function parseCSVFirstColumn(csvText){
+  if (!csvText) return [];
+  csvText = csvText.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  const rows = [];
+  let cur = '';
+  let inQuotes = false;
+  let colIndex = 0;
+  for (let i = 0; i < csvText.length; i++){
+    const ch = csvText[i];
+    const next = csvText[i+1];
+    if (ch === '"'){
+      if (inQuotes && next === '"'){ cur += '"'; i++; continue; }
+      inQuotes = !inQuotes;
+      continue;
+    }
+    if (!inQuotes && ch === ','){ colIndex++; continue; }
+    if (!inQuotes && ch === '\n'){
+      rows.push(cur);
+      cur = '';
+      colIndex = 0;
+      continue;
+    }
+    if (colIndex === 0) cur += ch;
+  }
+  if (cur !== '') rows.push(cur);
+  return rows.map(r => r.replace(/^\uFEFF/,'').trim()).filter(r => r.length > 0);
+}
+
+/* ----------------- Normalization + detection ----------------- */
+function normalizeLine(raw){
+  if (raw == null) return '';
+  let s = String(raw).normalize('NFKC');
+  s = s.replace(/^\uFEFF/, '');
+  s = s.replace(/[\u200B-\u200F\uFEFF]/g, '');
+  s = s.replace(/^"+|"+$/g, '');
+  s = s.replace(/\s+/g, ' ');
+  return s.trim();
+}
+
+function detectLineType(line){
+  const s = line.trim();
+  if (!s) return 'unknown';
+  if (/^¢\b/i.test(s)) return 'question';
+  if (/^¢\s*ID=/i.test(s)) return 'question';
+  if (/^(✔️|✔|✓|✅)/.test(s)) return 'correct';
+  if (/^(❌|✖️|✖|✕|✗|✘)/.test(s)) return 'incorrect';
+  return 'unknown';
+}
+
+function stripLeadingSymbol(s){
+  return s
+    .replace(/^¢\s*ID=\d+\s*/i, '')
+    .replace(/^¢\s*/i, '')
+    .replace(/^(✔️|✔|✓|✅)\s*/,'')
+    .replace(/^(❌|✖️|✖|✕|✗|✘)\s*/,'')
+    .trim();
+}
+
+/* ----------------- Build tests from Column A rows ----------------- */
+function buildTestsFromColumnA(rawRows){
+  const rows = rawRows.map(normalizeLine).filter(r => r.length > 0);
+  const tests = [];
+  let cur = null;
+  for (let i = 0; i < rows.length; i++){
+    const line = rows[i];
+    const type = detectLineType(line);
+    if (type === 'question'){
+      if (cur) tests.push(cur);
+      cur = { 
+        raw: line, 
+        question: stripLeadingSymbol(line), 
+        answers: [], 
+        sourceIndex: i 
+      };
+    } else if ((type === 'correct' || type === 'incorrect') && cur){
+      const isCorrect = (type === 'correct');
+      const txt = stripLeadingSymbol(line);
+      if (txt.length > 0) cur.answers.push({ 
+        text: txt, 
+        correct: isCorrect,
+        originalText: txt
+      });
+    }
+  }
+  if (cur) tests.push(cur);
+  return tests.filter(t => Array.isArray(t.answers) && t.answers.length > 0);
+}
+
+/* ----------------- App state ----------------- */
+let allTests = [];
+let sessionTests = [];
+let currentIndex = 0;
+let autoMode = false;
+let prevBtn, nextBtn, autoBtn;
+let examMode = false;
+let examTimeRemaining = 3 * 60 * 60; // 3 hours in seconds
+let examTimerInterval = null;
+let onlineUsers = 1;
+let currentUserGuestNumber = 1;
+let nextGuestNumber = 2;
+let examResults = []; // Store exam results
+
+/* ----------------- DOM Elements ----------------- */
+const optionsScreen = document.getElementById('optionsScreen');
+const testScreen = document.getElementById('testScreen');
+const questionText = document.getElementById('questionText');
+const answersContainer = document.getElementById('answersContainer');
+const feedback = document.getElementById('feedback');
+const startBtn = document.getElementById('startBtn');
+const timerElement = document.getElementById('timer');
+const examRightPanel = document.getElementById('examRightPanel');
+const examCountdown = document.getElementById('examCountdown');
+const examTestBoxes = document.getElementById('examTestBoxes');
+
+const modeSequential = document.getElementById('modeSequential');
+const modeShuffleQuestions = document.getElementById('modeShuffleQuestions');
+const modeShuffleAnswers = document.getElementById('modeShuffleAnswers');
+const modeExam = document.getElementById('modeExam');
+
+// Chat elements
+const chatButton = document.getElementById('chatButton');
+const chatWindow = document.getElementById('chatWindow');
+const closeChat = document.querySelector('.close-chat');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const onlineCount = document.getElementById('onlineCount');
+
+/* ----------------- Timer Functions ----------------- */
+function updateTimer() {
+  if (examMode) {
+    // Hide clock in exam mode
+    timerElement.style.display = 'none';
+    return;
+  }
+  
+  timerElement.style.display = 'block';
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  timerElement.textContent = `${hours}:${minutes}:${seconds}`;
+}
+
+function updateExamTimer() {
+  if (!examMode) return;
+  
+  const hours = Math.floor(examTimeRemaining / 3600);
+  const minutes = Math.floor((examTimeRemaining % 3600) / 60);
+  const seconds = examTimeRemaining % 60;
+  
+  examCountdown.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  
+  if (examTimeRemaining <= 0) {
+    clearInterval(examTimerInterval);
+    completeExam();
+  } else {
+    examTimeRemaining--;
+  }
+}
+
+/* ----------------- Chat Functions ----------------- */
+function initChat() {
+  // Update online users count
+  onlineCount.textContent = onlineUsers;
+  
+  // Chat button toggle
+  chatButton.addEventListener('click', () => {
+    chatWindow.classList.toggle('active');
+    if (chatWindow.classList.contains('active')) {
+      chatInput.focus();
+    }
+  });
+  
+  // Close chat button
+  closeChat.addEventListener('click', () => {
+    chatWindow.classList.remove('active');
+  });
+  
+  // Send message on button click
+  sendBtn.addEventListener('click', sendMessage);
+  
+  // Send message on Enter key
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+  
+  // Simulate random users coming online/offline
+  setInterval(() => {
+    // Random change between -5 and +5 users
+    const change = Math.floor(Math.random() * 11) - 5;
+    onlineUsers = Math.max(1, onlineUsers + change);
+    onlineCount.textContent = onlineUsers;
+    
+    // Randomly generate guest messages
+    if (Math.random() > 0.7 && chatWindow.classList.contains('active')) {
+      setTimeout(() => {
+        simulateGuestMessage();
+      }, Math.random() * 3000);
+    }
+  }, 8000);
+}
+
+function getCurrentDateTime() {
+  const now = new Date();
+  const date = now.toLocaleDateString('ka-GE');
+  const time = now.toLocaleTimeString('ka-GE', { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit' 
+  });
+  return `${date}, ${time}`;
+}
+
+function simulateGuestMessage() {
+  const guestNames = ['სტუმარი', 'მომხმარებელი', 'ვიზიტორი', 'მსმენელი'];
+  const guestName = guestNames[Math.floor(Math.random() * guestNames.length)];
+  const guestNumber = nextGuestNumber++;
+  
+  const messages = [
+    'გამარჯობა!',
+    'ვინ არის აქ?',
+    'ეს ტესტი საინტერესოა.',
+    'როგორ ვერით?',
+    'დახმარება მჭირდება.',
+    'ვინმეს ხომ არ აქვს პასუხი?',
+    'კარგი დღე ყველას!',
+    'რამდენი კითხვა დაგრჩათ?',
+    'მე უკვე 50-ს გავაკეთე.',
+    'ეს რთული კითხვაა.',
+    'ვერ ვერ გავიგე ეს საკითხი.',
+    'დამეხმარეთ, გთხოვთ.',
+    'წარმატებები ყველას!',
+    'რამდენი დრო დაგრჩათ?',
+    'მე ახლა დავიწყე.'
+  ];
+  
+  const message = messages[Math.floor(Math.random() * messages.length)];
+  
+  addMessageToChat(`${guestName} ${guestNumber}`, message, false);
+}
+
+function sendMessage() {
+  const message = chatInput.value.trim();
+  if (!message) return;
+  
+  addMessageToChat(`სტუმარი ${currentUserGuestNumber}`, message, true);
+  
+  // Clear input
+  chatInput.value = '';
+  
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  
+  // Simulate auto-reply after 1-2 seconds
+  setTimeout(() => {
+    simulateGuestMessage();
+  }, 1000 + Math.random() * 1000);
+}
+
+function addMessageToChat(author, message, isSent) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+  
+  const time = getCurrentDateTime();
+  
+  messageDiv.innerHTML = `
+    <div class="message-author">${escapeHtml(author)}</div>
+    <div class="message-time">${time}</div>
+    <div class="message-content">${escapeHtml(message)}</div>
+  `;
+  
+  chatMessages.appendChild(messageDiv);
+  
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+/* ----------------- Exam Mode Functions ----------------- */
+function createExamTestBoxes() {
+  examTestBoxes.innerHTML = '';
+  
+  for (let i = 0; i < 200; i++) {
+    const testBox = document.createElement('div');
+    testBox.className = 'test-box';
+    testBox.textContent = i + 1;
+    testBox.dataset.index = i;
+    
+    if (i === currentIndex) {
+      testBox.classList.add('current');
+    }
+    
+    if (sessionTests[i] && sessionTests[i].selectedAnswers && sessionTests[i].selectedAnswers.length > 0) {
+      testBox.classList.add('answered');
+    }
+    
+    testBox.addEventListener('click', () => {
+      currentIndex = i;
+      renderCurrentQuestion();
+    });
+    
+    examTestBoxes.appendChild(testBox);
+  }
+}
+
+function startExamMode() {
+  examMode = true;
+  examTimeRemaining = 3 * 60 * 60; // 3 hours
+  examResults = []; // Clear previous results
+  
+  // Hide regular clock
+  timerElement.style.display = 'none';
+  
+  // Show exam right panel
+  examRightPanel.classList.remove('hidden');
+  
+  // Create test boxes (10 per row)
+  createExamTestBoxes();
+  
+  // Start exam timer
+  clearInterval(examTimerInterval);
+  examTimerInterval = setInterval(updateExamTimer, 1000);
+  updateExamTimer();
+}
+
+function completeExam() {
+  clearInterval(examTimerInterval);
+  
+  // Calculate results
+  const correctCount = sessionTests.filter(q => 
+    q.selectedAnswers && q.selectedAnswers.some(idx => q.answers[idx]?.correct)
+  ).length;
+  
+  const passed = correctCount >= 150;
+  
+  // Collect all results for history
+  const resultsHistory = sessionTests.map((question, index) => {
+    const selectedAnswerIndex = question.selectedAnswers ? question.selectedAnswers[0] : -1;
+    const isCorrect = selectedAnswerIndex !== -1 && question.answers[selectedAnswerIndex]?.correct;
+    const selectedAnswer = selectedAnswerIndex !== -1 ? question.answers[selectedAnswerIndex].text : 'არაა არჩეული';
+    const correctAnswer = question.answers.find(a => a.correct)?.text || 'არ არის ცნობილი';
+    
+    return {
+      questionNumber: index + 1,
+      question: question.question,
+      selectedAnswer: selectedAnswer,
+      correctAnswer: correctAnswer,
+      isCorrect: isCorrect
+    };
+  });
+  
+  // Create results HTML with history
+  const resultsHTML = `
+    <div style="text-align:center; padding:20px; width:100%; max-height: calc(100vh - 100px); overflow-y: auto;">
+      <div style="font-size:24px; font-weight:600; color:#1e293b; margin-bottom:20px;">
+        საგამოცდო რეჟიმი დასრულდა! ${passed ? '✅' : '❌'}
+      </div>
+      <div style="font-size:18px; color:#64748b; margin-bottom:30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="margin-bottom:10px; display: flex; justify-content: space-between;">
+          <span>სწორი პასუხები:</span>
+          <span style="color:var(--success); font-weight:600;">${correctCount}</span>
+        </div>
+        <div style="margin-bottom:10px; display: flex; justify-content: space-between;">
+          <span>არასწორი პასუხები:</span>
+          <span style="color:var(--danger); font-weight:600;">${200 - correctCount}</span>
+        </div>
+        <div style="margin-bottom:10px; display: flex; justify-content: space-between;">
+          <span>შეფასება:</span>
+          <span style="color:${passed ? 'var(--success)' : 'var(--danger)'}; font-weight:600;">${passed ? 'გადახდილი' : 'ვერ გადაიხადე'}</span>
+        </div>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+          ${passed ? 'გილოცავთ! თქვენ წარმატებით დაფარეთ გამოცდა!' : 'სამწუხაროდ, თქვენ ვერ დაფარეთ გამოცდა. სცადეთ კიდევ.'}
+        </div>
+      </div>
+      
+      <div style="text-align:left; margin-bottom: 20px;">
+        <div style="font-size:20px; font-weight:600; color:#1e293b; margin-bottom:15px;">შედეგების ისტორია:</div>
+        <div class="results-history">
+          ${resultsHistory.map(result => `
+            <div class="result-item ${result.isCorrect ? 'correct' : 'incorrect'}">
+              <div class="result-question">${result.questionNumber}. ${escapeHtml(result.question.substring(0, 100))}${result.question.length > 100 ? '...' : ''}</div>
+              <div class="result-answer"><strong>თქვენი პასუხი:</strong> ${escapeHtml(result.selectedAnswer)}</div>
+              ${!result.isCorrect ? `<div class="result-answer"><strong>სწორი პასუხი:</strong> ${escapeHtml(result.correctAnswer)}</div>` : ''}
+              <div class="result-status ${result.isCorrect ? 'correct' : 'incorrect'}">${result.isCorrect ? 'სწორი' : 'არასწორი'}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <button id="restartBtn" style="padding:14px 40px; background:var(--accent); color:white; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; margin-top: 20px;">
+        თავიდან დაწყება
+      </button>
+    </div>
+  `;
+  
+  const questionContainer = document.querySelector('.question-container');
+  questionContainer.innerHTML = resultsHTML;
+  examRightPanel.classList.add('hidden');
+  
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    location.reload();
+  });
+}
+
+/* ----------------- Auto-load CSV on page load ----------------- */
+function loadCSV() {
+  const defaultUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAKLvhjOkhFoadqGeDcS_T74DdtGNqLPY30zld05OjmbwwP_i-anVEF0uNNTtb29NoPKLm6XTAxIGu/pub?gid=69945858&single=true&output=csv";
+  
+  fetch(defaultUrl).then(r => {
+    if (!r.ok) throw new Error('Network error: ' + r.status);
+    return r.text();
+  }).then(txt => {
+    const firstCol = parseCSVFirstColumn(txt);
+    allTests = buildTestsFromColumnA(firstCol);
+    
+    if (!allTests.length){
+      questionText.textContent = 'ვერ მოიძებნა ტესტები. შეამოწმეთ CSV ფაილი.';
+      showNotification('ვერ მოიძებნა ტესტები. შეამოწმეთ CSV ფაილი.');
+      return;
+    }
+  }).catch(err => {
+    questionText.textContent = 'შეცდომა ფაილის ჩატვირთვისას: ' + err.message;
+    showNotification('შეცდომა ფაილის ჩატვირთვისას: ' + err.message);
+    console.error(err);
+  });
+}
+
+/* ----------------- Start Test ----------------- */
+startBtn.addEventListener('click', () => {
+  if (!allTests.length){ 
+    showNotification('ტესტები არ იძებნება');
+    return; 
+  }
+  
+  // Check for incompatible modes
+  if (modeSequential.checked && modeShuffleQuestions.checked) {
+    showNotification('ეს რეჟიმები ერთად შეუძლებელია არსებობდეს!');
+    return;
+  }
+  
+  // Check if at least one mode is selected
+  if (!modeSequential.checked && !modeShuffleQuestions.checked && !modeShuffleAnswers.checked && !modeExam.checked) {
+    showNotification('აირჩიეთ რეჟიმი დასაწყებად!');
+    return;
+  }
+  
+  // Reset stats
+  autoMode = false;
+  
+  // Get selected modes
+  examMode = modeExam.checked;
+  const shuffleQuestions = modeShuffleQuestions.checked || examMode;
+  const shuffleAnswers = modeShuffleAnswers.checked || examMode;
+  
+  // Prepare session tests
+  if (examMode) {
+    // For exam mode, shuffle all tests and take first 200
+    const shuffledAll = [...allTests];
+    shuffleArray(shuffledAll);
+    sessionTests = shuffledAll.slice(0, 200).map(t => ({ 
+      question: t.question, 
+      answers: t.answers.map(a => ({...a})),
+      selectedAnswers: [],
+      hasCorrectAnswer: false,
+      isComplete: false,
+      // Track whether answer is correct (for results)
+      isAnswerCorrect: null
+    }));
+  } else {
+    // For normal mode, use all tests
+    sessionTests = allTests.map(t => ({ 
+      question: t.question, 
+      answers: t.answers.map(a => ({...a})),
+      selectedAnswers: [],
+      hasCorrectAnswer: false,
+      isComplete: false,
+      isAnswerCorrect: null
+    }));
+  }
+  
+  // Apply selected modes
+  if (shuffleQuestions && !examMode) {
+    shuffleArray(sessionTests);
+  }
+  
+  if (shuffleAnswers) {
+    sessionTests.forEach(q => shuffleArray(q.answers));
+  }
+  
+  currentIndex = 0;
+  
+  // Switch screens
+  optionsScreen.style.display = 'none';
+  testScreen.classList.add('active');
+  
+  if (examMode) {
+    startExamMode();
+  }
+  
+  renderCurrentQuestion();
+});
+
+/* ----------------- Render Current Question ----------------- */
+function renderCurrentQuestion() {
+  if (!sessionTests.length) return;
+  
+  const question = sessionTests[currentIndex];
+  questionText.textContent = question.question;
+  
+  if (examMode) {
+    // Update exam test boxes
+    createExamTestBoxes();
+  }
+  
+  answersContainer.innerHTML = '';
+  feedback.innerHTML = '';
+  
+  // Check if question has correct answer selected
+  const hasCorrect = question.selectedAnswers && question.selectedAnswers.some(idx => 
+    question.answers[idx]?.correct
+  );
+  
+  // Create answer elements
+  if (question.answers && question.answers.length > 0) {
+    question.answers.forEach((answer, idx) => {
+      const answerEl = document.createElement('div');
+      answerEl.className = 'answer-item';
+      
+      const wasSelected = question.selectedAnswers && question.selectedAnswers.includes(idx);
+      
+      if (wasSelected) {
+        answerEl.classList.add('selected');
+        // In exam mode, don't show correct/incorrect immediately
+        if (!examMode && answer.correct) {
+          answerEl.classList.add('correct');
+        } else if (!examMode && !answer.correct) {
+          answerEl.classList.add('incorrect');
+        }
+      }
+      
+      answerEl.innerHTML = `
+        <span class="answer-number">${idx + 1}.</span>
+        <span class="answer-text">${escapeHtml(answer.text)}</span>
+      `;
+      
+      answerEl.addEventListener('click', () => {
+        if (wasSelected) return;
+        
+        if (!question.selectedAnswers) {
+          question.selectedAnswers = [];
+        }
+        
+        // Clear previous selections (single choice)
+        question.selectedAnswers = [idx];
+        
+        // Mark the answer as selected
+        question.selectedAnswers.push(idx);
+        
+        // Store whether the answer is correct (for later results)
+        question.isAnswerCorrect = answer.correct;
+        
+        // In exam mode, just show selection without feedback
+        if (examMode) {
+          // Just select the answer, no immediate feedback
+          answerEl.classList.add('selected');
+          feedback.innerHTML = '';
+        } else {
+          // Normal mode with immediate feedback
+          answerEl.classList.add('selected');
+          
+          if (answer.correct) {
+            answerEl.classList.add('correct');
+            if (!question.hasCorrectAnswer) {
+              question.hasCorrectAnswer = true;
+            }
+            feedback.innerHTML = `<div style="color:var(--success); font-size:16px; font-weight:600;">✓ სწორი პასუხი!</div>`;
+            
+            if (autoMode && currentIndex < sessionTests.length - 1) {
+              setTimeout(() => {
+                currentIndex++;
+                renderCurrentQuestion();
+              }, 500);
+            }
+          } else {
+            answerEl.classList.add('incorrect');
+            feedback.innerHTML = `<div style="color:var(--danger); font-size:16px; font-weight:600;">✗ არასწორი პასუხი</div>`;
+          }
+        }
+        
+        renderCurrentQuestion();
+      });
+      
+      answersContainer.appendChild(answerEl);
+    });
+  } else {
+    answersContainer.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px;">პასუხები არ მოიძებნა</div>';
+  }
+  
+  // Update navigation buttons
+  if (prevBtn && nextBtn) {
+    prevBtn.disabled = currentIndex === 0;
+    nextBtn.disabled = currentIndex === sessionTests.length - 1;
+  }
+  
+  updateAutoButton();
+}
+
+/* ----------------- Update Auto Button ----------------- */
+function updateAutoButton() {
+  if (!autoBtn || !nextBtn) return;
+  
+  if (autoMode) {
+    nextBtn.classList.add('vanish-effect');
+    autoBtn.textContent = 'გამორთე Auto';
+  } else {
+    nextBtn.classList.remove('vanish-effect');
+    autoBtn.textContent = 'Auto';
+  }
+}
+
+/* ----------------- Navigation ----------------- */
+function bindNavigationEvents() {
+  prevBtn = document.getElementById('prevBtn');
+  nextBtn = document.getElementById('nextBtn');
+  autoBtn = document.getElementById('autoBtn');
+  
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderCurrentQuestion();
+      }
+    });
+  }
+  
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex < sessionTests.length - 1) {
+        currentIndex++;
+        renderCurrentQuestion();
+      } else if (examMode) {
+        completeExam();
+      } else {
+        showCompletionScreen();
+      }
+    });
+  }
+  
+  if (autoBtn) {
+    autoBtn.addEventListener('click', () => {
+      autoMode = !autoMode;
+      updateAutoButton();
+    });
+  }
+}
+
+/* ----------------- Show Completion Screen ----------------- */
+function showCompletionScreen() {
+  const totalQuestions = sessionTests.length;
+  const correctCount = sessionTests.filter(q => q.hasCorrectAnswer).length;
+  const percentage = Math.round((correctCount / totalQuestions) * 100);
+  
+  const completionHTML = `
+    <div style="text-align:center; padding:40px 20px; width:100%;">
+      <div style="font-size:24px; font-weight:600; color:#1e293b; margin-bottom:20px;">
+        ტესტი დასრულდა! 🎉
+      </div>
+      <div style="font-size:18px; color:#64748b; margin-bottom:30px;">
+        თქვენ დაასრულეთ ${totalQuestions} კითხვიდან ${correctCount} სწორად (${percentage}%)
+      </div>
+      <button id="restartBtn" style="padding:14px 40px; background:var(--accent); color:white; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;">
+        თავიდან დაწყება
+      </button>
+    </div>
+  `;
+  
+  const questionContainer = document.querySelector('.question-container');
+  questionContainer.innerHTML = completionHTML;
+  examRightPanel.classList.add('hidden');
+  
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    location.reload();
+  });
+}
+
+/* ----------------- Initialize on page load ----------------- */
+window.addEventListener('DOMContentLoaded', () => {
+  loadCSV();
+  
+  // Start system timer
+  setInterval(updateTimer, 1000);
+  updateTimer();
+  
+  // Initialize chat
+  initChat();
+  
+  // Bind events
+  bindNavigationEvents();
+  
+  // Check for incompatible modes
+  if (modeSequential) {
+    modeSequential.addEventListener('change', () => {
+      if (modeSequential.checked && modeShuffleQuestions.checked) {
+        showNotification('ეს რეჟიმები ერთად შეუძლებელია არსებობდეს!');
+        modeSequential.checked = false;
+      }
+    });
+  }
+  
+  if (modeShuffleQuestions) {
+    modeShuffleQuestions.addEventListener('change', () => {
+      if (modeShuffleQuestions.checked && modeSequential.checked) {
+        showNotification('ეს რეჟიმები ერთად შეუძლებელია არსებობდეს!');
+        modeShuffleQuestions.checked = false;
+      }
+    });
+  }
+  
+  if (modeExam) {
+    modeExam.addEventListener('change', () => {
+      if (modeExam.checked) {
+        if (modeSequential) modeSequential.checked = false;
+        if (modeShuffleQuestions) modeShuffleQuestions.checked = true;
+        if (modeShuffleAnswers) modeShuffleAnswers.checked = true;
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
