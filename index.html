@@ -80,6 +80,11 @@
     box-shadow: none;
   }
   
+  /* Timer - Hide in exam mode */
+  #timer.hidden {
+    display: none;
+  }
+  
   /* Container */
   .container{
     width: 100%;
@@ -96,7 +101,57 @@
     margin: 0 auto;
     width: 100%;
     max-width: 800px;
+    position: relative;
   }
+  
+  /* Loader Styles */
+  .loader-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    border-radius: 10px;
+  }
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .loader-text {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  /* Disable start button while loading */
+  .start-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .start-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
   .mode-label{
     font-size: 24px;
     font-weight: 600;
@@ -538,56 +593,54 @@
     border-radius: 6px;
   }
   
-  /* Exam Test Boxes Grid - 5 per row in exam mode */
- /* Exam Test Boxes Grid - 5 per row with FIXED size boxes */
-.exam-test-boxes {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  width: 100%;
-  height: calc(100vh - 150px);
-  padding: 15px 10px;
-  overflow-y: auto;
-  background: #f8fafc;
-  border-radius: 8px;
-}
-
-.test-box {
-  width: 45px; /* FIXED width */
-  height: 45px; /* FIXED height - removes aspect-ratio dependency */
-  border: 2px solid #e2e8f0;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.2s;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  /* Center the box in the grid cell */
-  margin: 0 auto;
-}
-
-.test-box:hover {
-  transform: scale(1.1);
-  border-color: var(--accent);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-.test-box.answered {
-  background: #f1f5f9;
-  color: #64748b;
-  border-color: #94a3b8;
-}
-
-.test-box.current {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
-  transform: scale(1.1);
-}
+  /* Exam Test Boxes Grid - 5 per row in exam mode with FIXED size */
+  .exam-test-boxes {
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: calc(100vh - 150px);
+    padding: 15px 10px;
+    overflow-y: auto;
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+  
+  .test-box {
+    width: 45px;
+    height: 45px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .test-box:hover {
+    transform: scale(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  
+  .test-box.answered {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #94a3b8;
+  }
+  
+  .test-box.current {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    transform: scale(1.1);
+  }
   
   /* Exam Navigation Container - Under Last Question */
   .exam-navigation-container {
@@ -884,17 +937,22 @@
     <!-- Online Status - Next to chat button -->
     <div class="online-status">
       <div class="online-dot"></div>
-      <span class="online-text">ონლაინ არის: <span id="onlineCount">0</span></span>
+      <span class="online-text">ონლაინ: <span id="onlineCount">0</span></span>
     </div>
     
     <!-- Chat Window - 80% height -->
     <div id="chatWindow" class="chat-window">
       <div class="chat-header">
-        <span>ჩატი</span>
+        <span>ჩატი - ტესტების განხილვა</span>
         <button class="close-chat">×</button>
       </div>
       <div id="chatMessages" class="chat-messages">
         <!-- Messages will be inserted here -->
+        <div class="message received">
+          <div class="message-author">სისტემა</div>
+          <div class="message-time">ახლა</div>
+          <div class="message-content">კეთილი იყოს თქვენი მობრძანება! შეგიძლიათ განიხილოთ ტესტები სხვა მომხმარებლებთან ერთად.</div>
+        </div>
       </div>
       <div class="chat-input-area">
         <input type="text" id="chatInput" class="chat-input" placeholder="შეიყვანეთ თქვენი შეტყობინება...">
@@ -936,7 +994,13 @@
         <span>საგამოცდო რეჟიმი (200 შემთხვევითი ტესტი, 3 საათი)</span>
       </label>
       
-      <button id="startBtn" class="start-btn">დაწყება</button>
+      <!-- Loader Overlay -->
+      <div id="loaderOverlay" class="loader-overlay">
+        <div class="spinner"></div>
+        <div class="loader-text">ტესტები იტვირთება...</div>
+      </div>
+      
+      <button id="startBtn" class="start-btn" disabled>დაწყება</button>
     </div>
 
     <!-- Test Screen -->
@@ -1011,9 +1075,145 @@
   </div>
 
 <script>
+/* ----------------- Simple Chat System (No Firebase) ----------------- */
+let chatMessages = [];
+let onlineUsers = 1; // Start with yourself
+let userName = 'სტუმარი ' + Math.floor(Math.random() * 1000);
+
+/* ----------------- DOM Elements ----------------- */
+const chatButton = document.getElementById('chatButton');
+const chatWindow = document.getElementById('chatWindow');
+const closeChat = document.querySelector('.close-chat');
+const chatMessagesEl = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const onlineCount = document.getElementById('onlineCount');
+
+/* ----------------- Simple Chat Functions ----------------- */
+function initChat() {
+  // Update online users count
+  onlineCount.textContent = onlineUsers;
+  
+  // Load initial messages
+  loadInitialMessages();
+  
+  // Chat button toggle
+  chatButton.addEventListener('click', () => {
+    chatWindow.classList.toggle('active');
+    if (chatWindow.classList.contains('active')) {
+      chatInput.focus();
+    }
+  });
+  
+  // Close chat button
+  closeChat.addEventListener('click', () => {
+    chatWindow.classList.remove('active');
+  });
+  
+  // Send message on button click
+  sendBtn.addEventListener('click', sendMessage);
+  
+  // Send message on Enter key
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+  
+  // Simulate online users
+  setInterval(() => {
+    // Randomly change online count between 1-10
+    onlineUsers = Math.max(1, Math.floor(Math.random() * 10));
+    onlineCount.textContent = onlineUsers;
+  }, 5000);
+}
+
+function loadInitialMessages() {
+  // Add welcome message
+  addMessageToChat('სისტემა', 'კეთილი იყოს თქვენი მობრძანება! შეგიძლიათ განიხილოთ ტესტები სხვა მომხმარებლებთან ერთად.', false, new Date());
+  
+  // Add some example messages
+  setTimeout(() => {
+    addMessageToChat('სტუმარი 123', 'ვინმეს აქვს ამოხსნილი მე-45 კითხვა?', false, new Date(Date.now() - 300000));
+  }, 1000);
+  
+  setTimeout(() => {
+    addMessageToChat('სტუმარი 456', 'დიახ, პასუხია ბ) ვარიანტი', false, new Date(Date.now() - 240000));
+  }, 2000);
+}
+
+function sendMessage() {
+  const message = chatInput.value.trim();
+  if (!message) return;
+  
+  // Add message to chat
+  addMessageToChat(userName, message, true, new Date());
+  
+  // Clear input
+  chatInput.value = '';
+  
+  // Simulate responses
+  simulateResponse(message);
+}
+
+function simulateResponse(userMessage) {
+  setTimeout(() => {
+    const responses = [
+      'კარგი კითხვაა!',
+      'ამაზე ვფიქრობდი მეც.',
+      'ვერ ვიპოვე ამის პასუხი.',
+      'სცადე Auto რეჟიმი.',
+      'მე-3 პასუხი სწორი ჩანს.',
+      'გმადლობთ განხილვისთვის!',
+      'ვინმეს სხვა აზრი აქვს?'
+    ];
+    
+    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+    const botName = 'სტუმარი ' + Math.floor(Math.random() * 1000);
+    
+    addMessageToChat(botName, randomResponse, false, new Date());
+  }, 1000 + Math.random() * 2000);
+}
+
+function addMessageToChat(author, message, isSent, timestamp) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+  
+  const time = timestamp.toLocaleTimeString('ka-GE', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  messageDiv.innerHTML = `
+    <div class="message-author">${escapeHtml(author)}</div>
+    <div class="message-time">${time}</div>
+    <div class="message-content">${escapeHtml(message)}</div>
+  `;
+  
+  chatMessagesEl.appendChild(messageDiv);
+  
+  // Scroll to bottom
+  setTimeout(() => {
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  }, 100);
+}
+
 /* ----------------- Utility functions ----------------- */
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
-function shuffleArray(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+function escapeHtml(s){ 
+  if(!s) return ''; 
+  return String(s).replace(/[&<>"']/g, m => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#039;'
+  }[m])); 
+}
+
+function shuffleArray(a){ 
+  for(let i=a.length-1;i>0;i--){ 
+    const j=Math.floor(Math.random()*(i+1)); 
+    [a[i],a[j]]=[a[j],a[i]]; 
+  } 
+}
 
 /* ----------------- Show Notification ----------------- */
 function showNotification(message, isError = true) {
@@ -1032,6 +1232,14 @@ function showNotification(message, isError = true) {
       notification.parentNode.removeChild(notification);
     }
   }, 4000);
+}
+
+/* ----------------- Reset Loader ----------------- */
+function resetLoader() {
+  loaderOverlay.innerHTML = `
+    <div class="spinner"></div>
+    <div class="loader-text">ტესტები იტვირთება...</div>
+  `;
 }
 
 /* ----------------- Robust CSV first-column extractor ----------------- */
@@ -1133,10 +1341,6 @@ let examPrevBtn, examNextBtn, examAutoBtn;
 let examMode = false;
 let examTimeRemaining = 3 * 60 * 60; // 3 hours in seconds
 let examTimerInterval = null;
-let onlineUsers = 1;
-let currentUserGuestNumber = 1;
-let nextGuestNumber = 2;
-let examResults = []; // Store exam results
 let isEditingQuestionNumber = false;
 
 /* ----------------- DOM Elements ----------------- */
@@ -1153,6 +1357,7 @@ const examTestBoxes = document.getElementById('examTestBoxes');
 const questionCounter = document.getElementById('questionCounter');
 const currentQuestionEl = document.getElementById('currentQuestion');
 const totalQuestionsEl = document.getElementById('totalQuestions');
+const loaderOverlay = document.getElementById('loaderOverlay');
 
 const modeSequential = document.getElementById('modeSequential');
 const modeShuffleQuestions = document.getElementById('modeShuffleQuestions');
@@ -1165,17 +1370,13 @@ const examQuestionText = document.getElementById('examQuestionText');
 const examAnswersContainer = document.getElementById('examAnswersContainer');
 const examFeedback = document.getElementById('examFeedback');
 
-// Chat elements
-const chatButton = document.getElementById('chatButton');
-const chatWindow = document.getElementById('chatWindow');
-const closeChat = document.querySelector('.close-chat');
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const sendBtn = document.getElementById('sendBtn');
-const onlineCount = document.getElementById('onlineCount');
-
 /* ----------------- Timer Functions ----------------- */
 function updateTimer() {
+  // Don't update timer if it's hidden (exam mode)
+  if (timerElement.classList.contains('hidden')) {
+    return;
+  }
+  
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -1198,123 +1399,6 @@ function updateExamTimer() {
   } else {
     examTimeRemaining--;
   }
-}
-
-/* ----------------- Chat Functions ----------------- */
-function initChat() {
-  // Update online users count
-  onlineCount.textContent = onlineUsers;
-  
-  // Chat button toggle
-  chatButton.addEventListener('click', () => {
-    chatWindow.classList.toggle('active');
-    if (chatWindow.classList.contains('active')) {
-      chatInput.focus();
-    }
-  });
-  
-  // Close chat button
-  closeChat.addEventListener('click', () => {
-    chatWindow.classList.remove('active');
-  });
-  
-  // Send message on button click
-  sendBtn.addEventListener('click', sendMessage);
-  
-  // Send message on Enter key
-  chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-  });
-  
-  // Simulate random users coming online/offline
-  setInterval(() => {
-    // Random change between -5 and +5 users
-    const change = Math.floor(Math.random() * 11) - 5;
-    onlineUsers = Math.max(1, onlineUsers + change);
-    onlineCount.textContent = onlineUsers;
-    
-    // Randomly generate guest messages
-    if (Math.random() > 0.7 && chatWindow.classList.contains('active')) {
-      setTimeout(() => {
-        simulateGuestMessage();
-      }, Math.random() * 3000);
-    }
-  }, 8000);
-}
-
-function getCurrentDateTime() {
-  const now = new Date();
-  const date = now.toLocaleDateString('ka-GE');
-  const time = now.toLocaleTimeString('ka-GE', { 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    second: '2-digit' 
-  });
-  return `${date}, ${time}`;
-}
-
-function simulateGuestMessage() {
-  const guestNames = ['სტუმარი', 'მომხმარებელი', 'ვიზიტორი', 'მსმენელი'];
-  const guestName = guestNames[Math.floor(Math.random() * guestNames.length)];
-  const guestNumber = nextGuestNumber++;
-  
-  const messages = [
-    'გამარჯობა!',
-    'ვინ არის აქ?',
-    'ეს ტესტი საინტერესოა.',
-    'როგორ ვერით?',
-    'დახმარება მჭირდება.',
-    'ვინმეს ხომ არ აქვს პასუხი?',
-    'კარგი დღე ყველას!',
-    'რამდენი კითხვა დაგრჩათ?',
-    'მე უკვე 50-ს გავაკეთე.',
-    'ეს რთული კითხვაა.',
-    'ვერ ვერ გავიგე ეს საკითხი.',
-    'დამეხმარეთ, გთხოვთ.',
-    'წარმატებები ყველას!',
-    'რამდენი დრო დაგრჩათ?',
-    'მე ახლა დავიწყე.'
-  ];
-  
-  const message = messages[Math.floor(Math.random() * messages.length)];
-  
-  addMessageToChat(`${guestName} ${guestNumber}`, message, false);
-}
-
-function sendMessage() {
-  const message = chatInput.value.trim();
-  if (!message) return;
-  
-  addMessageToChat(`სტუმარი ${currentUserGuestNumber}`, message, true);
-  
-  // Clear input
-  chatInput.value = '';
-  
-  // Scroll to bottom
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-  
-  // Simulate auto-reply after 1-2 seconds
-  setTimeout(() => {
-    simulateGuestMessage();
-  }, 1000 + Math.random() * 1000);
-}
-
-function addMessageToChat(author, message, isSent) {
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-  
-  const time = getCurrentDateTime();
-  
-  messageDiv.innerHTML = `
-    <div class="message-author">${escapeHtml(author)}</div>
-    <div class="message-time">${time}</div>
-    <div class="message-content">${escapeHtml(message)}</div>
-  `;
-  
-  chatMessages.appendChild(messageDiv);
-  
-  // Scroll to bottom
-  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 /* ----------------- Exam Mode Functions ----------------- */
@@ -1347,10 +1431,9 @@ function createExamTestBoxes() {
 function startExamMode() {
   examMode = true;
   examTimeRemaining = 3 * 60 * 60; // 3 hours
-  examResults = []; // Clear previous results
   
-  // Hide regular clock (optional - you can keep it if you want)
-  // timerElement.style.display = 'none';
+  // Hide clock in exam mode
+  timerElement.classList.add('hidden');
   
   // Show exam containers and hide normal containers
   normalModeContainer.classList.add('hidden');
@@ -1371,6 +1454,9 @@ function startExamMode() {
 
 function completeExam() {
   clearInterval(examTimerInterval);
+  
+  // Show clock again after exam
+  timerElement.classList.remove('hidden');
   
   // Calculate results
   const correctCount = sessionTests.filter(q => 
@@ -1450,6 +1536,12 @@ function completeExam() {
 
 /* ----------------- Auto-load CSV on page load ----------------- */
 function loadCSV() {
+  // Show loader
+  loaderOverlay.style.display = 'flex';
+  resetLoader();
+  // Disable start button
+  startBtn.disabled = true;
+  
   const defaultUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAKLvhjOkhFoadqGeDcS_T74DdtGNqLPY30zld05OjmbwwP_i-anVEF0uNNTtb29NoPKLm6XTAxIGu/pub?gid=69945858&single=true&output=csv";
   
   fetch(defaultUrl).then(r => {
@@ -1460,15 +1552,24 @@ function loadCSV() {
     allTests = buildTestsFromColumnA(firstCol);
     
     if (!allTests.length){
-      questionText.textContent = 'ვერ მოიძებნა ტესტები. შეამოწმეთ CSV ფაილი.';
       showNotification('ვერ მოიძებნა ტესტები. შეამოწმეთ CSV ფაილი.');
+      loaderOverlay.innerHTML = '<div style="color: var(--danger); font-weight: 600; text-align: center; padding: 20px;">ტესტები ვერ მოიძებნა<br><small>გთხოვთ განაახლოთ გვერდი</small></div>';
+      // Still enable the button so user can retry
+      startBtn.disabled = false;
       return;
     }
     
     totalQuestionsEl.textContent = allTests.length;
+    
+    // Hide loader and enable button
+    loaderOverlay.style.display = 'none';
+    startBtn.disabled = false;
+    
   }).catch(err => {
-    questionText.textContent = 'შეცდომა ფაილის ჩატვირთვისას: ' + err.message;
     showNotification('შეცდომა ფაილის ჩატვირთვისას: ' + err.message);
+    loaderOverlay.innerHTML = `<div style="color: var(--danger); font-weight: 600; text-align: center; padding: 20px;">შეცდომა ჩატვირთვისას<br><small>${err.message}</small></div>`;
+    // Enable button even on error so user can try again
+    startBtn.disabled = false;
     console.error(err);
   });
 }
@@ -1553,6 +1654,9 @@ startBtn.addEventListener('click', () => {
     questionCounter.classList.remove('hidden');
     currentQuestionEl.textContent = currentIndex + 1;
     totalQuestionsEl.textContent = sessionTests.length;
+    
+    // Show clock in normal mode
+    timerElement.classList.remove('hidden');
   }
   
   renderCurrentQuestion();
@@ -1939,6 +2043,9 @@ function showCompletionScreen() {
   const correctCount = sessionTests.filter(q => q.hasCorrectAnswer).length;
   const percentage = Math.round((correctCount / totalQuestions) * 100);
   
+  // Show clock again after completion
+  timerElement.classList.remove('hidden');
+  
   const completionHTML = `
     <div style="text-align:center; padding:40px 20px; width:100%;">
       <div style="font-size:24px; font-weight:600; color:#1e293b; margin-bottom:20px;">
@@ -1965,6 +2072,7 @@ function showCompletionScreen() {
 
 /* ----------------- Initialize on page load ----------------- */
 window.addEventListener('DOMContentLoaded', () => {
+  // Load CSV tests
   loadCSV();
   
   // Start system timer
