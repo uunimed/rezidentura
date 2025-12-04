@@ -26,6 +26,146 @@
     position: relative;
   }
   
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
+  /* Exam mode - smaller question font on mobile */
+  .exam-question-text {
+    font-size: 16px !important;
+    max-height: 70px !important;
+  }
+  
+  /* 1. Navigation - Keep it at bottom but not fixed */
+  .navigation {
+    position: fixed !important;
+    bottom: 60px !important; /* Above the chat/counter/online row */
+    left: 10px !important;
+    right: 10px !important;
+    top: auto !important;
+    width: auto !important;
+    padding: 10px !important;
+    background: white !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    z-index: 1000 !important;
+    border-top: none !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .nav-center {
+    display: flex !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  
+  .nav-btn {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  
+  /* 2. Bottom-left container - Now holds Chat | Counter | Online in one row */
+  .bottom-left-container {
+    position: fixed !important;
+    bottom: 10px !important; /* At the very bottom */
+    left: 10px !important;
+    right: 10px !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    display: flex !important;
+    z-index: 1001 !important; /* Above navigation */
+  }
+  
+  /* 3. Question counter in bottom-left container */
+  .question-counter {
+    position: static !important;
+    bottom: auto !important;
+    right: auto !important;
+    font-size: 16px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    margin: 0 !important;
+    flex: 1 !important;
+    text-align: center !important;
+    order: 2 !important; /* Middle position */
+  }
+  
+  .question-counter .current-question,
+  .question-counter .counter-separator,
+  .question-counter .total-questions {
+    font-size: 16px !important;
+  }
+  
+  /* 4. Chat button - Left side */
+  .chat-button {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    order: 1 !important; /* Left position */
+    flex: 1 !important;
+    text-align: left !important;
+  }
+  
+  /* 5. Online status - Right side */
+  .online-status {
+    font-size: 12px !important;
+    order: 3 !important; /* Right position */
+    flex: 1 !important;
+    text-align: right !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+  }
+  
+  /* 6. Adjust content spacing */
+  .normal-mode-container {
+    padding-top: 10px !important;
+    padding-bottom: 130px !important; /* Space for both rows */
+  }
+  
+  .question-text {
+    font-size: 18px !important;
+    margin-top: 0 !important;
+  }
+  
+  /* 7. Chat window adjustments */
+  .chat-window {
+    width: calc(100% - 20px) !important;
+    left: 10px !important;
+    bottom: 130px !important; /* Above both rows */
+    height: 50vh !important;
+  }
+  
+  /* 8. Hide the old fixed question counter */
+  #questionCounter.hidden {
+    display: none !important;
+  }
+  
+  /* 9. Show the question counter in bottom-left container */
+  .bottom-left-container .question-counter {
+    display: flex !important;
+    justify-content: center !important;
+  }
+  
+  /* 10. Adjust online status layout */
+  .online-status {
+    gap: 5px !important;
+  }
+  
+  .online-text {
+    white-space: nowrap !important;
+  }
+}
+  
   /* Notification */
   .notification {
     position: fixed;
@@ -1058,6 +1198,9 @@
                 </svg>
                 წინა
               </button>
+              <button id="examFinishBtn" class="nav-btn" style="background: var(--danger);">
+                გამოცდის დასრულება
+              </button>
               <button id="examNextBtn" class="nav-btn">
                 შემდეგი
                 <svg class="vector-arrow next" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1525,7 +1668,7 @@ let sessionTests = [];
 let currentIndex = 0;
 let autoMode = false;
 let prevBtn, nextBtn, autoBtn;
-let examPrevBtn, examNextBtn, examAutoBtn;
+let examPrevBtn, examNextBtn, examAutoBtn, examFinishBtn;
 let examMode = false;
 let examTimeRemaining = 3 * 60 * 60; // 3 hours in seconds
 let examTimerInterval = null;
@@ -1641,10 +1784,11 @@ function startExamMode() {
 }
 
 function completeExam() {
+  // Clear any intervals
   clearInterval(examTimerInterval);
   
-  // Show clock again after exam
-  timerElement.classList.remove('hidden');
+  // Hide the timer
+  timerElement.classList.add('hidden');
   
   // Calculate results
   const correctCount = sessionTests.filter(q => 
@@ -1653,72 +1797,114 @@ function completeExam() {
   
   const passed = correctCount >= 150;
   
-  // Collect all results for history
-  const resultsHistory = sessionTests.map((question, index) => {
-    const selectedAnswerIndex = question.selectedAnswers ? question.selectedAnswers[0] : -1;
-    const isCorrect = selectedAnswerIndex !== -1 && question.answers[selectedAnswerIndex]?.correct;
-    const selectedAnswer = selectedAnswerIndex !== -1 ? question.answers[selectedAnswerIndex].text : 'არაა არჩეული';
-    const correctAnswer = question.answers.find(a => a.correct)?.text || 'არ არის ცნობილი';
-    
-    return {
-      questionNumber: index + 1,
-      question: question.question,
-      selectedAnswer: selectedAnswer,
-      correctAnswer: correctAnswer,
-      isCorrect: isCorrect
-    };
-  });
+  // Hide the exam right panel immediately
+  examRightPanel.classList.add('hidden');
   
-  // Create results HTML with history
+  // Create results HTML
   const resultsHTML = `
-    <div style="text-align:center; padding:20px; width:100%; max-height: calc(100vh - 100px); overflow-y: auto;">
-      <div style="font-size:24px; font-weight:600; color:#1e293b; margin-bottom:20px;">
-        საგამოცდო რეჟიმი დასრულდა! ${passed ? '✅' : '❌'}
-      </div>
-      <div style="font-size:18px; color:#64748b; margin-bottom:30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <div style="margin-bottom:10px; display: flex; justify-content: space-between;">
-          <span>სწორი პასუხები:</span>
-          <span style="color:var(--success); font-weight:600;">${correctCount}</span>
+    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; padding: 20px;">
+      <div style="max-width: 800px; width: 100%; background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden;">
+        <!-- Header -->
+        <div style="background: ${passed ? 'var(--success)' : 'var(--danger)'}; color: white; padding: 30px; text-align: center;">
+          <div style="font-size: 36px; font-weight: 700; margin-bottom: 10px;">
+            ${passed ? '🎉 გილოცავთ!' : '😔 ვერ ჩააბარეთ'}
+          </div>
+          <div style="font-size: 24px; font-weight: 600;">
+            საგამოცდო რეჟიმი დასრულდა!
+          </div>
         </div>
-        <div style="margin-bottom:10px; display: flex; justify-content: space-between;">
-          <span>არასწორი პასუხები:</span>
-          <span style="color:var(--danger); font-weight:600;">${200 - correctCount}</span>
-        </div>
-        <div style="margin-bottom:10px; display: flex; justify-content: space-between;">
-          <span>შეფასება:</span>
-        </div>
-        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
-          ${passed ? 'გილოცავთ! თქვენ წარმატებით ჩააბარეთ გამოცდა!' : 'სამწუხაროდ, თქვენ ვერ ჩააბარეთ გამოცდა. სცადეთ კიდევ.'}
-        </div>
-      </div>
-      
-      <div style="text-align:left; margin-bottom: 20px;">
-        <div style="font-size:20px; font-weight:600; color:#1e293b; margin-bottom:15px;">შედეგების ისტორია:</div>
-        <div class="results-history">
-          ${resultsHistory.map(result => `
-            <div class="result-item ${result.isCorrect ? 'correct' : 'incorrect'}">
-              <div class="result-question">${result.questionNumber}. ${escapeHtml(result.question.substring(0, 100))}${result.question.length > 100 ? '...' : ''}</div>
-              <div class="result-answer"><strong>თქვენი პასუხი:</strong> ${escapeHtml(result.selectedAnswer)}</div>
-              ${!result.isCorrect ? `<div class="result-answer"><strong>სწორი პასუხი:</strong> ${escapeHtml(result.correctAnswer)}</div>` : ''}
-              <div class="result-status ${result.isCorrect ? 'correct' : 'incorrect'}">${result.isCorrect ? 'სწორი' : 'არასწორი'}</div>
+        
+        <!-- Stats -->
+        <div style="padding: 30px; border-bottom: 1px solid #e2e8f0;">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px;">
+            <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: 8px;">
+              <div style="font-size: 14px; color: #64748b; margin-bottom: 8px;">სწორი პასუხები</div>
+              <div style="font-size: 42px; font-weight: 700; color: var(--success);">${correctCount}</div>
             </div>
-          `).join('')}
+            <div style="text-align: center; padding: 20px; background: #fef2f2; border-radius: 8px;">
+              <div style="font-size: 14px; color: #64748b; margin-bottom: 8px;">არასწორი პასუხები</div>
+              <div style="font-size: 42px; font-weight: 700; color: var(--danger);">${200 - correctCount}</div>
+            </div>
+          </div>
+          
+          <div style="text-align: center; padding: 15px; background: #f8fafc; border-radius: 8px;">
+            <div style="font-size: 16px; color: #64748b; margin-bottom: 5px;">შეფასება</div>
+            <div style="font-size: 28px; font-weight: 700; color: ${passed ? 'var(--success)' : 'var(--danger)'}">
+              ${passed ? 'გამოცდა ჩაბარებულია' : 'გამოცდა ვერ ჩაიბარა'}
+            </div>
+            <div style="font-size: 18px; margin-top: 10px;">
+              ${passed ? 'გილოცავთ! თქვენ წარმატებით ჩააბარეთ გამოცდა!' : 'სამწუხაროდ, თქვენ ვერ ჩააბარეთ გამოცდა. სცადეთ კიდევ.'}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Questions History -->
+        <div style="padding: 30px;">
+          <div style="font-size: 20px; font-weight: 600; color: #1e293b; margin-bottom: 20px; text-align: center;">
+            შედეგების ისტორია
+          </div>
+          <div id="resultsHistoryContainer" style="max-height: 300px; overflow-y: auto; padding: 10px;">
+            <!-- Results will be inserted here -->
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="padding: 30px; background: #f8fafc; display: flex; gap: 15px; justify-content: center; border-top: 1px solid #e2e8f0;">
+          <button id="viewDetailsBtn" style="padding: 12px 24px; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+            დეტალურად ნახვა
+          </button>
+          <button id="restartBtn" style="padding: 12px 24px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+            თავიდან დაწყება
+          </button>
         </div>
       </div>
-      
-      <button id="restartBtn" style="padding:14px 40px; background:var(--accent); color:white; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; margin-top: 20px;">
-        თავიდან დაწყება
-      </button>
     </div>
   `;
   
-  const questionContainer = document.querySelector('.question-container');
-  questionContainer.innerHTML = resultsHTML;
-  examRightPanel.classList.add('hidden');
+  // Replace the entire test screen content
+  testScreen.innerHTML = resultsHTML;
   
-  document.getElementById('restartBtn').addEventListener('click', () => {
-    location.reload();
-  });
+  // Add results history
+  const historyContainer = document.getElementById('resultsHistoryContainer');
+  if (historyContainer) {
+    sessionTests.forEach((question, index) => {
+      const selectedAnswerIndex = question.selectedAnswers ? question.selectedAnswers[0] : -1;
+      const isCorrect = selectedAnswerIndex !== -1 && question.answers[selectedAnswerIndex]?.correct;
+      const selectedAnswer = selectedAnswerIndex !== -1 ? question.answers[selectedAnswerIndex].text : 'არაა არჩეული';
+      const correctAnswer = question.answers.find(a => a.correct)?.text || 'არ არის ცნობილი';
+      
+      const resultItem = document.createElement('div');
+      resultItem.style.cssText = 'padding: 12px; margin-bottom: 8px; background: white; border-radius: 6px; border-left: 4px solid ' + (isCorrect ? 'var(--success)' : 'var(--danger)') + ';';
+      resultItem.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 4px; font-size: 14px;">
+          ${index + 1}. ${escapeHtml(question.question.substring(0, 80))}${question.question.length > 80 ? '...' : ''}
+        </div>
+        <div style="font-size: 13px; color: ${isCorrect ? 'var(--success)' : 'var(--danger)'}; margin-bottom: 2px;">
+          <strong>თქვენი პასუხი:</strong> ${escapeHtml(selectedAnswer)}
+        </div>
+        ${!isCorrect ? `<div style="font-size: 13px; color: var(--success);"><strong>სწორი პასუხი:</strong> ${escapeHtml(correctAnswer)}</div>` : ''}
+      `;
+      historyContainer.appendChild(resultItem);
+    });
+  }
+  
+  // Add event listeners for buttons
+  setTimeout(() => {
+    const restartBtn = document.getElementById('restartBtn');
+    if (restartBtn) {
+      restartBtn.addEventListener('click', () => {
+        location.reload();
+      });
+    }
+    
+    const viewDetailsBtn = document.getElementById('viewDetailsBtn');
+    if (viewDetailsBtn) {
+      viewDetailsBtn.addEventListener('click', () => {
+        // You can implement detailed view here
+        alert('დეტალური ინფორმაცია თითოეულ კითხვაზე');
+      });
+    }
+  }, 100);
 }
 
 /* ----------------- Auto-load CSV on page load ----------------- */
@@ -1864,6 +2050,9 @@ function renderCurrentQuestion() {
     
     // Render exam answers
     renderExamAnswers();
+    
+    // Check if all questions are answered
+    checkExamCompletion();
   } else {
     // Update normal question
     questionText.textContent = question.question;
@@ -1880,6 +2069,25 @@ function renderCurrentQuestion() {
     
     // Render normal answers
     renderNormalAnswers();
+  }
+}
+
+/* ----------------- Check if exam should be completed ----------------- */
+function checkExamCompletion() {
+  if (!examMode) return;
+  
+  // Check if all questions are answered
+  const allAnswered = sessionTests.every(q => 
+    q.selectedAnswers && q.selectedAnswers.length > 0
+  );
+  
+  // Check if we're on the last question
+  const isLastQuestion = currentIndex === sessionTests.length - 1;
+  
+  // If all questions answered and on last question, show completion option
+  if (allAnswered && isLastQuestion) {
+    // Show a message that exam can be completed
+    examFeedback.innerHTML = '<div style="color: var(--success); font-weight: 600;">ყველა კითხვა უპასუხია! დააჭირეთ "გამოცდის დასრულება" ღილაკს.</div>';
   }
 }
 
@@ -2001,15 +2209,18 @@ function renderExamAnswers() {
         // Clear previous selections (single choice)
         question.selectedAnswers = [idx];
         
-        // Mark the answer as selected
-        question.selectedAnswers.push(idx);
-        
         // Store whether the answer is correct (for later results)
         question.isAnswerCorrect = answer.correct;
         
         // In exam mode, just show selection without feedback
         answerEl.classList.add('selected');
         examFeedback.innerHTML = '';
+        
+        // Update the test boxes to show this question is answered
+        createExamTestBoxes();
+        
+        // Check if exam should be completed
+        setTimeout(checkExamCompletion, 100);
         
         renderCurrentQuestion();
       });
@@ -2063,6 +2274,7 @@ function bindNavigationEvents() {
   examPrevBtn = document.getElementById('examPrevBtn');
   examNextBtn = document.getElementById('examNextBtn');
   examAutoBtn = document.getElementById('examAutoBtn');
+  examFinishBtn = document.getElementById('examFinishBtn');
   
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
@@ -2108,7 +2320,8 @@ function bindNavigationEvents() {
       if (currentIndex < sessionTests.length - 1) {
         currentIndex++;
         renderCurrentQuestion();
-      } else if (examMode) {
+      } else {
+        // This is the last question, show results
         completeExam();
       }
     });
@@ -2119,6 +2332,18 @@ function bindNavigationEvents() {
       autoMode = !autoMode;
       updateAutoButton();
       updateExamAutoButton();
+    });
+  }
+  
+  // Add finish exam button handler
+  if (examFinishBtn) {
+    examFinishBtn.addEventListener('click', () => {
+      if (examMode) {
+        // Ask for confirmation before finishing
+        if (confirm('ნამდვილად გსურთ გამოცდის დასრულება? შეგიძლიათ შემდგომში უკან დაბრუნდეთ და განაგრძოთ.')) {
+          completeExam();
+        }
+      }
     });
   }
 }
