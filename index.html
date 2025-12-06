@@ -1480,7 +1480,7 @@
                 </svg>
                 წინა
               </button>
-              <button id="examFinishBtn" class="nav-btn" style="background: var(--danger); display: none;">
+              <button id="examFinishBtn" class="nav-btn" style="background: var(--danger);">
                 გამოცდის დასრულება
               </button>
               <button id="examNextBtn" class="nav-btn">
@@ -2121,11 +2121,11 @@ function checkAllQuestionsAnswered() {
   const examFinishBtn = document.getElementById('examFinishBtn');
   
   if (examFinishBtn) {
-    // Show/hide finish button based on completion - use !important style
+    // Show/hide finish button based on completion
     if (allAnswered) {
-      examFinishBtn.style.cssText = 'display: flex !important; background: var(--danger); color: white;';
+      examFinishBtn.style.display = 'flex';
     } else {
-      examFinishBtn.style.cssText = 'display: none !important;';
+      examFinishBtn.style.display = 'none';
     }
   }
   
@@ -2501,13 +2501,20 @@ function updateExamFinishButtonMobile() {
   }
 }
 
-// Call this whenever an answer is selected
 function onAnswerSelected() {
-  // Update the finish button
-  updateExamFinishButtonMobile();
+  // Update the finish button visibility
+  const allAnswered = sessionTests.every(q => 
+    q.selectedAnswers && q.selectedAnswers.length > 0
+  );
   
-  // Also check all questions
-  checkAllQuestionsAnswered();
+  const examFinishBtn = document.getElementById('examFinishBtn');
+  if (examFinishBtn) {
+    if (allAnswered) {
+      examFinishBtn.style.display = 'flex';
+    } else {
+      examFinishBtn.style.display = 'none';
+    }
+  }
 }
 
 
@@ -2620,31 +2627,31 @@ function renderExamAnswers() {
         <span class="answer-text">${escapeHtml(answer.text)}</span>
       `;
       
-      answerEl.addEventListener('click', () => {
-        if (wasSelected) return;
-        
-        if (!question.selectedAnswers) {
-          question.selectedAnswers = [];
-        }
-        
-        // Clear previous selections (single choice)
-        question.selectedAnswers = [idx];
-        
-        // Store whether the answer is correct (for later results)
-        question.isAnswerCorrect = answer.correct;
-        
-        // In exam mode, just show selection without feedback
-        answerEl.classList.add('selected');
-        examFeedback.innerHTML = '';
-        
-        // Update the test boxes to show this question is answered
-        createExamTestBoxes();
-        
-        // Check if all questions are answered
-        checkAllQuestionsAnswered();
-        
-        renderCurrentQuestion();
-      });
+answerEl.addEventListener('click', () => {
+  if (wasSelected) return;
+  
+  if (!question.selectedAnswers) {
+    question.selectedAnswers = [];
+  }
+  
+  // Clear previous selections (single choice)
+  question.selectedAnswers = [idx];
+  
+  // Store whether the answer is correct (for later results)
+  question.isAnswerCorrect = answer.correct;
+  
+  // In exam mode, just show selection without feedback
+  answerEl.classList.add('selected');
+  examFeedback.innerHTML = '';
+  
+  // Update the test boxes to show this question is answered
+  createExamTestBoxes();
+  
+  // Check if all questions are answered and update button
+  onAnswerSelected();
+  
+  renderCurrentQuestion();
+});
       
       examAnswersContainer.appendChild(answerEl);
     });
@@ -2736,21 +2743,21 @@ function bindNavigationEvents() {
     });
   }
   
-  if (examNextBtn) {
-    examNextBtn.addEventListener('click', () => {
-      if (currentIndex < sessionTests.length - 1) {
-        currentIndex++;
-        renderCurrentQuestion();
+if (examNextBtn) {
+  examNextBtn.addEventListener('click', () => {
+    if (currentIndex < sessionTests.length - 1) {
+      currentIndex++;
+      renderCurrentQuestion();
+    } else {
+      // This is the last question, check if all are answered
+      if (checkAllQuestionsAnswered()) {
+        completeExam();
       } else {
-        // This is the last question, check if all are answered
-        if (checkAllQuestionsAnswered()) {
-          showFinishExamModal();
-        } else {
-          showNotification('გთხოვთ უპასუხოთ ყველა კითხვას გამოცდის დასრულებამდე');
-        }
+        showNotification('გთხოვთ უპასუხოთ ყველა კითხვას გამოცდის დასრულებამდე');
       }
-    });
-  }
+    }
+  });
+}
   
   if (examAutoBtn) {
     examAutoBtn.addEventListener('click', () => {
@@ -2760,19 +2767,19 @@ function bindNavigationEvents() {
     });
   }
   
-  // Add finish exam button handler
-  if (examFinishBtn) {
-    examFinishBtn.addEventListener('click', () => {
-      if (examMode) {
-        // Only allow finishing if all questions are answered
-        if (checkAllQuestionsAnswered()) {
-          showFinishExamModal();
-        } else {
-          showNotification('გთხოვთ უპასუხოთ ყველა კითხვას გამოცდის დასრულებამდე');
-        }
+// Add finish exam button handler
+if (examFinishBtn) {
+  examFinishBtn.addEventListener('click', () => {
+    if (examMode) {
+      // Only allow finishing if all questions are answered
+      if (checkAllQuestionsAnswered()) {
+        completeExam();
+      } else {
+        showNotification('გთხოვთ უპასუხოთ ყველა კითხვას გამოცდის დასრულებამდე');
       }
-    });
-  }
+    }
+  });
+}
   
   // Modal button handlers
   if (confirmFinishBtn) {
