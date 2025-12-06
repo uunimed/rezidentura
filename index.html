@@ -32,33 +32,127 @@
     padding: 10px;
   }
   
-  
   /* Exam mode - smaller question font on mobile */
   .exam-question-text {
     font-size: 16px !important;
-    max-height: 70px !important;
-  }
+    max-height: none !important; /* ← REMOVE THIS */
+    min-height: 10px; /* ← Minimum height instead */
+    overflow: visible !important; /* ← Allow full display */
+}
   
-  /* 1. Navigation - Keep it at bottom but not fixed */
-  .navigation {
+  /* ==================== ALL QUESTIONS PAGE (NORMAL MODE) ==================== */
+  /* 1. Navigation should be above chat/online panel in normal mode */
+  .normal-mode-container .navigation {
     position: fixed !important;
-    bottom: 60px !important; /* Above the chat/counter/online row */
+    bottom: 60px !important; /* Above chat/online panel */
     left: 10px !important;
     right: 10px !important;
     top: auto !important;
     width: auto !important;
     padding: 10px !important;
-    background: white !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    background: transparent !important;
     z-index: 1000 !important;
     border-top: none !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
-  background: transparent !important;
-    box-shadow: none !important;
-    border-top: none !important;
-
+  }
+  
+  /* Adjust content spacing for normal mode */
+  .normal-mode-container {
+    padding-top: 10px !important;
+    padding-bottom: 130px !important; /* Space for both rows */
+  }
+  
+  /* ==================== EXAM MODE MOBILE LAYOUT (REVERSED) ==================== */
+  .exam-mode-container {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: calc(100vh - 20px) !important;
+    position: relative !important;
+    padding-bottom: 180px !important; /* Space for navigation and chat row */
+  }
+  
+  /* 2. Questions on TOP in exam mode */
+  .question-left-panel {
+    order: 1 !important; /* FIRST - Questions on top */
+    padding-right: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  
+  .exam-question-text {
+    text-align: center !important;
+    width: 100% !important;
+    padding: 0 10px !important;
+  }
+  
+  .exam-answers-container {
+    width: 100% !important;
+    max-width: 600px !important;
+    margin: 0 auto !important;
+  }
+  
+  .exam-answer-item {
+    text-align: left !important;
+    width: 100% !important;
+  }
+  
+  /* 3. Test boxes (numbers 1-200) UNDER questions */
+  .exam-right-panel {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    order: 2 !important; /* SECOND - Test boxes under questions */
+    padding-left: 0 !important;
+    border-left: none !important;
+    border-top: 1px solid #e2e8f0 !important;
+    margin-top: 20px !important;
+    margin-bottom: 0 !important;
+    position: static !important;
+    height: auto !important;
+  }
+  
+  .exam-right-panel.hidden {
+    display: none !important;
+  }
+  
+  .exam-right-panel:not(.hidden) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  
+  .exam-test-boxes {
+    grid-template-columns: repeat(5, 45px) !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    max-height: 300px !important;
+    padding: 15px !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* 4. Navigation - Above chat/online panel (for both normal and exam modes) */
+  .exam-navigation-container {
+    order: 3 !important;
+    position: fixed !important;
+    bottom: 70px !important; /* Above chat/online panel */
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    padding: 15px !important;
+    background: white !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    z-index: 1000 !important;
+    margin-top: 0 !important;
+    border-top: 1px solid #e2e8f0 !important;
   }
   
   .nav-center {
@@ -74,35 +168,35 @@
     flex: 1 !important;
   }
   
-  /* 2. Bottom-left container - Now holds Chat | Counter | Online in one row */
+  /* 5. Counter in chat/online panel - center bottom */
   .bottom-left-container {
     position: fixed !important;
-    bottom: 10px !important; /* At the very bottom */
+    bottom: 10px !important;
     left: 10px !important;
     right: 10px !important;
     flex-direction: row !important;
     justify-content: space-between !important;
     align-items: center !important;
-    background: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
     padding: 10px 12px !important;
     border-radius: 8px !important;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
     display: flex !important;
-    z-index: 1001 !important; /* Above navigation */
+    z-index: 1001 !important;
   }
   
-/* 3. Question counter in bottom-left container */
+  /* Question counter in bottom-left container - CENTER */
   .question-counter {
     position: static !important;
     bottom: auto !important;
     right: auto !important;
-    font-size: 5px !important; /* ← Changed from 16px to 20px */
+    font-size: 5px !important;
     padding: 0 !important;
     background: transparent !important;
     margin: 0 !important;
     flex: 1 !important;
     text-align: center !important;
-    order: 2 !important;
+    order: 2 !important; /* Center position */
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -114,23 +208,24 @@
     font-size: 20px !important;
   }
   
-    /* NEW: Add these specific overrides */
+  /* NEW: Add these specific overrides */
   .bottom-left-container .question-counter .counter-separator,
   .bottom-left-container .question-counter .total-questions {
-    font-size: 20px !important; /* Force mobile size */
+    font-size: 20px !important;
     color: #64748b !important;
   }
   
-  /* 4. Chat button - Left side */
+  /* Chat button - Left side */
   .chat-button {
     padding: 6px 12px !important;
     font-size: 12px !important;
     order: 1 !important; /* Left position */
     flex: 1 !important;
     text-align: left !important;
+    min-width: 70px !important;
   }
   
-  /* 5. Online status - Right side */
+  /* Online status - Right side */
   .online-status {
     font-size: 12px !important;
     order: 3 !important; /* Right position */
@@ -139,16 +234,57 @@
     display: flex !important;
     justify-content: flex-end !important;
     align-items: center !important;
+    min-width: 100px !important;
   }
   
-  /* 6. Adjust content spacing */
-  .normal-mode-container {
+  /* Adjust content spacing */
+  .exam-mode-container {
     padding-top: 10px !important;
-    padding-bottom: 130px !important; /* Space for both rows */
+    padding-bottom: 180px !important; /* Space for both rows */
   }
   
+  /* Adjust exam countdown position */
+  .exam-countdown {
+    width: 100% !important;
+    text-align: center !important;
+    margin-bottom: 10px !important;
+    font-size: 16px !important;
+  }
+  
+  /* Hide the old fixed question counter in exam mode */
+  #questionCounter.hidden {
+    display: none !important;
+  }
+  
+  /* Show the question counter in bottom-left container */
+  .bottom-left-container .question-counter {
+    display: flex !important;
+    justify-content: center !important;
+  }
+  
+  /* Adjust online status layout */
+  .online-status {
+    gap: 5px !important;
+  }
+  
+  .online-text {
+    white-space: nowrap !important;
+  }
+  
+  /* Hide the question counter from exam right panel in mobile */
+  .exam-right-panel .question-counter {
+    display: none !important;
+  }
+  
+  /* Make sure test boxes are visible */
+  .test-box {
+    width: 45px !important;
+    height: 45px !important;
+  }
+  
+  /* Question text adjustments */
   .question-text {
-    font-size: 18px !important;
+    font-size: 17px !important;
     margin-top: 0 !important;
   }
   
@@ -165,11 +301,11 @@
     display: none !important;
   }
   
-/* 9. Show the question counter in bottom-left container */
-.bottom-left-container .question-counter {
-  display: flex !important;
-  justify-content: center !important;
-}
+  /* 9. Show the question counter in bottom-left container */
+  .bottom-left-container .question-counter {
+    display: flex !important;
+    justify-content: center !important;
+  }
   
   /* 10. Adjust online status layout */
   .online-status {
@@ -259,6 +395,40 @@
     position: relative;
   }
   
+  @media (max-width: 768px) {
+  .options-screen {
+    padding: 15px 20px !important; /* ← Reduce padding */
+  }
+  
+  
+  .option-item {
+    padding: 6px 10px !important; /* ← Even smaller on mobile */
+    min-height: 40px !important;
+    margin-bottom: 8px !important;
+    gap: 8px !important;
+  }
+  
+  .option-item span {
+    font-size: 13px !important; /* ← Smaller text on mobile */
+  }
+  
+  .option-item input[type="checkbox"] {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  .mode-label {
+    font-size: 18px !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .start-btn {
+    width: 130px !important;
+    padding: 8px !important;
+    font-size: 13px !important;
+    margin: 20px auto 0 !important;
+  }
+}
   /* Loader Styles */
   .loader-overlay {
     position: absolute;
@@ -1153,6 +1323,7 @@
   .hidden{
     display: none;
   }
+
 </style>
 </head>
 <body>
