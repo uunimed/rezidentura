@@ -2117,11 +2117,28 @@ function checkAllQuestionsAnswered() {
     q.selectedAnswers && q.selectedAnswers.length > 0
   );
   
-  // Show/hide finish button based on completion
-  if (allAnswered) {
-    examFinishBtn.style.display = 'block';
-  } else {
-    examFinishBtn.style.display = 'none';
+  // Get the finish button (it might be in a different container on mobile)
+  const examFinishBtn = document.getElementById('examFinishBtn');
+  
+  if (examFinishBtn) {
+    // Show/hide finish button based on completion - use !important style
+    if (allAnswered) {
+      examFinishBtn.style.cssText = 'display: flex !important; background: var(--danger); color: white;';
+    } else {
+      examFinishBtn.style.cssText = 'display: none !important;';
+    }
+  }
+  
+  // Also update test boxes to reflect answered status
+  if (examTestBoxes) {
+    const testBoxes = examTestBoxes.querySelectorAll('.test-box');
+    testBoxes.forEach((box, index) => {
+      if (sessionTests[index] && sessionTests[index].selectedAnswers && sessionTests[index].selectedAnswers.length > 0) {
+        box.classList.add('answered');
+      } else {
+        box.classList.remove('answered');
+      }
+    });
   }
   
   return allAnswered;
@@ -2457,6 +2474,42 @@ function renderCurrentQuestion() {
     renderNormalAnswers();
   }
 }
+
+function updateExamFinishButtonMobile() {
+  if (!examMode) return;
+  
+  const examFinishBtn = document.getElementById('examFinishBtn');
+  if (!examFinishBtn) return;
+  
+  // Check if all questions are answered
+  const allAnswered = sessionTests.every(q => 
+    q.selectedAnswers && q.selectedAnswers.length > 0
+  );
+  
+  // Force update the button visibility
+  if (allAnswered) {
+    examFinishBtn.style.cssText = `
+      display: flex !important;
+      background: var(--danger) !important;
+      color: white !important;
+      order: 2 !important;
+      flex: 2 !important;
+      min-width: 140px !important;
+    `;
+  } else {
+    examFinishBtn.style.cssText = 'display: none !important;';
+  }
+}
+
+// Call this whenever an answer is selected
+function onAnswerSelected() {
+  // Update the finish button
+  updateExamFinishButtonMobile();
+  
+  // Also check all questions
+  checkAllQuestionsAnswered();
+}
+
 
 /* ----------------- Render Normal Mode Answers ----------------- */
 function renderNormalAnswers() {
