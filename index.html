@@ -839,7 +839,7 @@
     margin-bottom: 15px;
     padding: 0;
     width: 100%;
-    max-height: 80px;
+    max-height: none;
     overflow-y: auto;
   }
   
@@ -1361,8 +1361,12 @@
   <div id="chatWindow" class="chat-window">
     <div class="chat-header">
       <span>ჩატი</span>
-      <button class="close-chat">×</button>
-    </div>
+<button class="close-chat">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+</div>
     <div id="chatMessages" class="chat-messages">
       <!-- Messages will be inserted here -->
     </div>
