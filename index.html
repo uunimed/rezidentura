@@ -26,6 +26,36 @@
     position: relative;
   }
   
+/* ==================== CHAT NOTIFICATION BADGE (BOTH MOBILE & DESKTOP) ==================== */
+.chat-notification {
+  position: absolute;
+  top: -5px;
+  right: 0px;
+  background: var(--danger);
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1002;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Make sure chat button has relative positioning */
+.chat-button {
+  position: relative;
+}
+
+
 /* Mobile-specific styles */
 @media (max-width: 768px) {
   body {
@@ -1099,21 +1129,22 @@
   }
   
   /* Chat Button */
-  .chat-button {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 12px rgba(14, 165, 164, 0.3);
-    transition: all 0.3s;
-  }
+.chat-button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(14, 165, 164, 0.3);
+  transition: all 0.3s;
+  position: relative; /* Add this line */
+}
   
   .chat-button:hover {
     transform: translateY(-2px);
@@ -1337,12 +1368,13 @@
 <!-- Chat and Online Status Container -->
 <div class="bottom-left-container">
   <!-- Chat Button -->
-  <button id="chatButton" class="chat-button">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
-    </svg>
-    ჩატი
-  </button>
+<button id="chatButton" class="chat-button">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
+  </svg>
+  ჩატი
+  <div id="chatNotification" class="chat-notification" style="display: none;"></div>
+</button>
   
   <!-- Question Counter - Bottom Right Corner (Visible in normal mode) -->
 <div id="questionCounter" class="question-counter hidden">
@@ -1545,6 +1577,12 @@ let userId = localStorage.getItem('chatUserId');
 let isOnline = false;
 let displayedMessageKeys = new Set(); // Track displayed message keys
 
+// ADD THE 3 VARIABLES RIGHT HERE:
+let unreadMessagesCount = 0;
+let isChatOpen = false;
+let lastSeenMessageTime = Date.now();
+
+
 // Generate user ID if not exists
 if (!userId) {
   userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -1584,18 +1622,29 @@ function initChat() {
     loadLocalMessagesAsFallback();
   }
   
-  // Chat button toggle
-  chatButton.addEventListener('click', () => {
-    chatWindow.classList.toggle('active');
-    if (chatWindow.classList.contains('active')) {
-      chatInput.focus();
-    }
-  });
+// Chat button toggle
+chatButton.addEventListener('click', () => {
+  chatWindow.classList.toggle('active');
+  if (chatWindow.classList.contains('active')) {
+    isChatOpen = true;
+    unreadMessagesCount = 0; // Reset unread count when opening chat
+    updateChatNotification();
+    chatInput.focus();
+    
+    // Scroll to bottom to see newest messages
+    setTimeout(() => {
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }, 100);
+  } else {
+    isChatOpen = false;
+  }
+});
   
-  // Close chat button
-  closeChat.addEventListener('click', () => {
-    chatWindow.classList.remove('active');
-  });
+// Close chat button
+closeChat.addEventListener('click', () => {
+  chatWindow.classList.remove('active');
+  isChatOpen = false;
+});
   
   // Send message on button click
   sendBtn.addEventListener('click', sendMessageToFirebase);
@@ -1611,51 +1660,76 @@ function setupFirebaseListeners() {
     // Clear displayed messages when starting
     displayedMessageKeys.clear();
     
-    // First, get ALL existing messages once
-    database.ref('chat/messages').limitToLast(50).once('value').then((snapshot) => {
-      if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-          const message = childSnapshot.val();
-          const messageKey = childSnapshot.key;
-          
-          // Add to displayed set
-          displayedMessageKeys.add(messageKey);
-          
-          // Check if this message is from current user
-          const isMyMessage = message.userId === userId;
-          
-          // Display the message
-          addMessageToChat(message.author, message.text, isMyMessage, new Date(message.timestamp));
-        });
-        
-      }
-    }).catch(error => {
-      console.error('Error loading initial messages:', error);
-      // Fallback to local messages
-      loadLocalMessagesAsFallback();
+// First, get ALL existing messages once
+database.ref('chat/messages').limitToLast(50).once('value').then((snapshot) => {
+  if (snapshot.exists()) {
+    const messages = [];
+    
+    snapshot.forEach((childSnapshot) => {
+      const message = childSnapshot.val();
+      const messageKey = childSnapshot.key;
+      messages.push({ ...message, key: messageKey });
     });
     
-    // Then listen for NEW messages only
-    database.ref('chat/messages').limitToLast(1).on('child_added', (snapshot) => {
-      const message = snapshot.val();
-      const messageKey = snapshot.key;
-      
-      // Skip if we already displayed this message in initial load
-      if (displayedMessageKeys.has(messageKey)) {
-        return;
-      }
-      
-      // Mark as displayed
-      displayedMessageKeys.add(messageKey);
+    // Sort messages by timestamp (oldest first) - for chronological display
+    messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    
+    // Add messages in chronological order
+    messages.forEach(msg => {
+      // Add to displayed set
+      displayedMessageKeys.add(msg.key);
       
       // Check if this message is from current user
-      const isMyMessage = message.userId === userId;
+      const isMyMessage = msg.userId === userId;
       
-      // Only add if it's not my own message (my own messages are added immediately)
-      if (!isMyMessage) {
-        addMessageToChat(message.author, message.text, false, new Date(message.timestamp));
-      }
+      // Display the message
+      addMessageToChat(msg.author, msg.text, isMyMessage, new Date(msg.timestamp));
+      
+      // Update last seen time
+      lastSeenMessageTime = Math.max(lastSeenMessageTime, msg.timestamp || 0);
     });
+    
+    // Scroll to bottom after loading all messages
+    setTimeout(() => {
+      if (isChatOpen) {
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+      }
+    }, 200);
+  }
+}).catch(error => {
+  console.error('Error loading initial messages:', error);
+  // Fallback to local messages
+  loadLocalMessagesAsFallback();
+});
+    
+// Then listen for NEW messages only
+database.ref('chat/messages').limitToLast(1).on('child_added', (snapshot) => {
+  const message = snapshot.val();
+  const messageKey = snapshot.key;
+  
+  // Skip if we already displayed this message in initial load
+  if (displayedMessageKeys.has(messageKey)) {
+    return;
+  }
+  
+  // Mark as displayed
+  displayedMessageKeys.add(messageKey);
+  
+  // Check if this message is from current user
+  const isMyMessage = message.userId === userId;
+  
+  // Only add if it's not my own message (my own messages are added immediately)
+  if (!isMyMessage) {
+    // Check if this message is newer than what we've seen
+    const messageTime = message.timestamp || Date.now();
+    
+    // Add to chat with notification
+    addMessageToChat(message.author, message.text, false, new Date(messageTime));
+    
+    // Update last seen time
+    lastSeenMessageTime = Math.max(lastSeenMessageTime, messageTime);
+  }
+});
     
 // For online count - show only 1 for current user
 database.ref('chat/onlineUsers').on('value', (snapshot) => {
@@ -1693,14 +1767,22 @@ database.ref('chat/onlineUsers').on('value', (snapshot) => {
 function loadLocalMessagesAsFallback() {
   console.log("Loading local messages as fallback...");
   try {
-    const localMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+    let localMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+    
+    // Sort local messages by timestamp (oldest first)
+    localMessages.sort((a, b) => {
+      const timeA = new Date(a.timestamp).getTime();
+      const timeB = new Date(b.timestamp).getTime();
+      return timeA - timeB; // Changed from timeB - timeA
+    });
+    
     if (localMessages.length > 0) {
       localMessages.forEach(msg => {
         const isSent = msg.userId === userId;
         addMessageToChat(msg.author, msg.text, isSent, new Date(msg.timestamp));
       });
     }
-    // Add welcome message
+    // Add welcome message (this will appear at the end)
     addMessageToChat('სისტემა', 'კეთილი იყოს თქვენი მობრძანება! (ლოკალური რეჟიმი)', false, new Date());
   } catch (e) {
     console.error('Error loading local messages:', e);
@@ -1833,12 +1915,24 @@ function addMessageToChat(author, message, isSent, timestamp) {
     <div class="message-content">${escapeHtml(message)}</div>
   `;
   
+  // Append to bottom (normal chronological order - newest at bottom)
   chatMessagesEl.appendChild(messageDiv);
   
-  // Scroll to bottom
-  setTimeout(() => {
-    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-  }, 100);
+  // Update notification if chat is closed and it's not our own message
+  if (!isChatOpen && !isSent) {
+    unreadMessagesCount++;
+    updateChatNotification();
+  }
+  
+  // Store the timestamp of this message
+  lastSeenMessageTime = Math.max(lastSeenMessageTime, timestamp.getTime());
+  
+  // Auto-scroll to bottom if chat is open
+  if (isChatOpen) {
+    setTimeout(() => {
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }, 100);
+  }
 }
 
 // ==================== ORIGINAL TEST APP FUNCTIONS ====================
@@ -2079,6 +2173,18 @@ function createExamTestBoxes() {
     });
     
     examTestBoxes.appendChild(testBox);
+  }
+}
+
+function updateChatNotification() {
+  const notification = document.getElementById('chatNotification');
+  if (notification) {
+    if (unreadMessagesCount > 0) {
+      notification.style.display = 'flex';
+      notification.textContent = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount.toString();
+    } else {
+      notification.style.display = 'none';
+    }
   }
 }
 
