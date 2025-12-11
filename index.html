@@ -26,6 +26,149 @@
     position: relative;
   }
   
+  /* ==================== TWO-COLUMN LAYOUT FOR OPTIONS ==================== */
+.option-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 18px;
+  width: 100%;
+}
+
+.option-item-half {
+  flex: 1;
+  min-width: 0; /* Allow shrinking */
+  margin-bottom: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .option-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .option-item-half {
+    width: 100%;
+  }
+}
+
+/* ==================== TOPIC DROPDOWN STYLES ==================== */
+.topic-dropdown-wrapper {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.topic-dropdown-header {
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #1e293b;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topic-select {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #334155;
+  outline: none;
+  transition: border-color 0.2s;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
+
+.topic-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.1);
+}
+
+.topic-select option {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.topic-select option:hover {
+  background: #f1f5f9;
+}
+
+.topic-select option:checked {
+  background: var(--accent);
+  color: white;
+}
+
+.topic-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Clear selection button */
+.clear-selection {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.clear-selection:hover {
+  background: #fee2e2;
+}
+
+/* Selected topics counter */
+.selected-count {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  background: #f0fdf4;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+}
+
+/* Make topic dropdown full width */
+#topicsDropdown {
+  width: 100%;
+}
+
+/* Remove the old checkbox item style */
+#topicSelectionItem {
+  display: none;
+}
+
 /* ==================== CHAT NOTIFICATION BADGE (BOTH MOBILE & DESKTOP) ==================== */
 .chat-notification {
   position: absolute;
@@ -386,20 +529,46 @@
       visibility: hidden;
     }
   }
-  
-  /* Timer */
-  #timer {
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--muted);
-    z-index: 999;
-    background: transparent;
-    padding: 0;
-    box-shadow: none;
-  }
+#timer {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  z-index: 999;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  text-align: right;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  /* Use the same font as the body */
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* This ensures .timer-time has the same font as #timer */
+.timer-time {
+  font-family: inherit; /* Inherit from parent (#timer) */
+  font-weight: 600;
+  color: inherit; /* Inherit color from parent */
+}
+
+.timer-topic {
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 600;
+  display: inline-block;
+}
+
+.timer-separator {
+  color: #cbd5e1;
+  margin: 0 5px;
+}
+
   
   /* Timer - Hide in exam mode */
   #timer.hidden {
@@ -451,6 +620,7 @@
     font-size: 18px !important;
     margin-bottom: 15px !important;
   }
+  
   
   .start-btn {
     width: 130px !important;
@@ -1426,15 +1596,27 @@
     </div>
   </div>
   
-  <div class="container">
+<div class="container">
     <!-- Options Screen -->
     <div id="optionsScreen" class="options-screen">
       <div class="mode-label">აირჩიეთ რეჟიმი:</div>
       
-      <label class="option-item">
-        <input type="checkbox" id="modeSequential" checked>
-        <span>ტესტების ჩვენება თანმიმდევრულად</span>
-      </label>
+      <!-- Two-column layout for sequential and topic filter -->
+<!-- Two-column layout for sequential and topic filter -->
+<div class="option-row">
+  <label class="option-item option-item-half">
+    <input type="checkbox" id="modeSequential" checked>
+    <span>ტესტების ჩვენება თანმიმდევრობით</span>
+  </label>
+  
+  <!-- Topic Dropdown - Inline with sequential checkbox -->
+  <div class="option-item-half" style="display: flex; flex-direction: column;">
+    <select id="topicsSelect" class="topic-select">
+      <!-- Topics will be loaded here as options -->
+      <option value="all" selected>ტესტები თემების მიხედვით</option>
+    </select>
+  </div>
+</div>
       
       <label class="option-item">
         <input type="checkbox" id="modeShuffleQuestions">
@@ -1462,6 +1644,11 @@
       </div>
       
       <button id="startBtn" class="start-btn" disabled>დაწყება</button>
+      
+      <!-- DEBUG BUTTON - ADD THIS -->
+      <button id="debugBtn" class="start-btn" style="margin-top: 10px; background: #f59e0b; display: none;">
+        Debug: Load Sample Tests
+      </button>
     </div>
 
     <!-- Test Screen -->
@@ -1602,6 +1789,15 @@ const chatMessagesEl = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
 const onlineCount = document.getElementById('onlineCount');
+// Add these to your DOM elements section
+const topicsDropdown = document.getElementById('topicsDropdown');
+const topicsSelect = document.getElementById('topicsSelect');
+
+// Add to your state variables
+let selectedTopic = null;
+let selectedTopics = []; // For multiple topic selection support
+let allTestsWithTopics = []; // Will store tests with topic info
+let availableTopics = new Set(); // To store unique topics
 
 /* ----------------- CHAT FUNCTIONS ----------------- */
 function initChat() {
@@ -2022,23 +2218,94 @@ function normalizeLine(raw){
   return s.trim();
 }
 
+/* ----------------- Fallback CSV loading ----------------- */
+function loadCSVWithFallback() {
+  // Show loader
+  loaderOverlay.style.display = 'flex';
+  resetLoader();
+  // Disable start button
+  startBtn.disabled = true;
+  
+  const defaultUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAKLvhjOkhFoadqGeDcS_T74DdtGNqLPY30zld05OjmbwwP_i-anVEF0uNNTtb29NoPKLm6XTAxIGu/pub?gid=69945858&single=true&output=csv";
+  
+  fetch(defaultUrl).then(r => {
+    if (!r.ok) throw new Error('Network error: ' + r.status);
+    return r.text();
+  }).then(txt => {
+      // Debug the structure first
+  const hasTopics = debugCSVStructure(txt);
+  console.log(`CSV has topics in column B: ${hasTopics}`);
+  
+  if (!hasTopics) {
+    console.warn("WARNING: No topics found in Column B! Check your CSV format.");
+  }
+    console.log("=== LOADING CSV WITH 2 COLUMNS ===");
+    
+    // Parse the CSV into two columns
+    const twoColRows = parseCSVTwoColumns(txt);
+    console.log(`Parsed ${twoColRows.length} rows with 2 columns`);
+    
+    // Log first 10 rows to see structure
+    for (let i = 0; i < Math.min(10, twoColRows.length); i++) {
+      const colA = twoColRows[i].columnA.substring(0, 50);
+      const colB = twoColRows[i].columnB;
+      console.log(`Row ${i}: A="${colA}${twoColRows[i].columnA.length > 50 ? '...' : ''}", B="${colB}"`);
+    }
+    
+    // Build tests from the two-column data
+    allTestsWithTopics = buildTestsFromCSV(twoColRows);
+    allTests = allTestsWithTopics;
+    
+    if (allTests.length) {
+      console.log(`Successfully loaded ${allTests.length} tests with topics`);
+      
+      // Log first 3 tests with their topics
+      for (let i = 0; i < Math.min(3, allTests.length); i++) {
+        console.log(`Test ${i + 1}: Question="${allTests[i].question.substring(0, 50)}...", Topic="${allTests[i].topic}"`);
+      }
+      
+      totalQuestionsEl.textContent = allTests.length;
+      extractTopics();
+      populateTopicsList();
+      loaderOverlay.style.display = 'none';
+      startBtn.disabled = false;
+    } else {
+      throw new Error('No tests found after parsing');
+    }
+  }).catch(err => {
+    console.error("Fallback loading failed:", err);
+    // Show error
+    showNotification('შეცდომა: ' + err.message);
+    loaderOverlay.style.display = 'none';
+    startBtn.disabled = false;
+  });
+}
+
 function detectLineType(line){
   const s = line.trim();
   if (!s) return 'unknown';
-  if (/^¢\b/i.test(s)) return 'question';
-  if (/^¢\s*ID=/i.test(s)) return 'question';
-  if (/^(✔️|✔|✓|✅)/.test(s)) return 'correct';
-  if (/^(❌|✖️|✖|✕|✗|✘)/.test(s)) return 'incorrect';
+  
+  // Check if it's a question (starts with ¢)
+  if (/^¢/.test(s)) {
+    return 'question';
+  }
+  
+  // Check if it's a correct answer
+  if (/^(✔️|✔|✓|✅|\+)/.test(s)) {
+    return 'correct';
+  }
+  
+  // Check if it's an incorrect answer
+  if (/^(❌|✖️|✖|✕|✗|✘|-)/.test(s)) {
+    return 'incorrect';
+  }
+  
+  // If it has Georgian characters and a question mark, it might be a question continuation
+  if (/[ა-ჰ]/.test(s) && /\?$/.test(s)) {
+    return 'question';
+  }
+  
   return 'unknown';
-}
-
-function stripLeadingSymbol(s){
-  return s
-    .replace(/^¢\s*ID=\d+\s*/i, '')
-    .replace(/^¢\s*/i, '')
-    .replace(/^(✔️|✔|✓|✅)\s*/,'')
-    .replace(/^(❌|✖️|✖|✕|✗|✘)\s*/,'')
-    .trim();
 }
 
 /* ----------------- Build tests from Column A rows ----------------- */
@@ -2129,7 +2396,21 @@ function updateTimer() {
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  timerElement.textContent = `${hours}:${minutes}:${seconds}`;
+  
+  const timeContent = `${hours}:${minutes}:${seconds}`;
+  
+  // If topic is selected, show TOPIC FIRST then time
+  if (selectedTopic) {
+    // Use the SAME font as the original timer (system font)
+    timerElement.innerHTML = `
+      <span class="timer-topic">${selectedTopic}</span>
+      <span class="timer-separator">|</span>
+      <span class="timer-time">${timeContent}</span>
+    `;
+  } else {
+    // Show only clock
+    timerElement.textContent = timeContent;
+  }
 }
 
 function updateExamTimer() {
@@ -2416,7 +2697,6 @@ function showDetailedResults() {
   detailedResultsModal.classList.add('active');
 }
 
-/* ----------------- Auto-load CSV on page load ----------------- */
 function loadCSV() {
   // Show loader
   loaderOverlay.style.display = 'flex';
@@ -2430,30 +2710,162 @@ function loadCSV() {
     if (!r.ok) throw new Error('Network error: ' + r.status);
     return r.text();
   }).then(txt => {
-    const firstCol = parseCSVFirstColumn(txt);
-    allTests = buildTestsFromColumnA(firstCol);
+    console.log("CSV raw text length:", txt.length);
+    console.log("First 500 chars:", txt.substring(0, 500));
+    
+    const twoColRows = parseCSVTwoColumns(txt);
+    console.log("Parsed rows:", twoColRows.length);
+    
+    // Debug: Show first few rows with both columns
+    for (let i = 0; i < Math.min(5, twoColRows.length); i++) {
+      console.log(`Row ${i}: A="${twoColRows[i].columnA.substring(0, 50)}...", B="${twoColRows[i].columnB}"`);
+    }
+    
+    allTestsWithTopics = buildTestsFromCSV(twoColRows);
+    console.log("Built tests:", allTestsWithTopics.length);
+    
+    if (allTestsWithTopics.length > 0) {
+      console.log("First test topic:", allTestsWithTopics[0].topic);
+      console.log("First test question preview:", allTestsWithTopics[0].question.substring(0, 100));
+    }
+    
+    allTests = allTestsWithTopics; // Keep backward compatibility
     
     if (!allTests.length){
       showNotification('ვერ მოიძებნა ტესტები. შეამოწმეთ ფაილი.');
       loaderOverlay.innerHTML = '<div style="color: var(--danger); font-weight: 600; text-align: center; padding: 20px;">ტესტები ვერ მოიძებნა<br><small>გთხოვთ განაახლოთ გვერდი</small></div>';
-      // Still enable the button so user can retry
       startBtn.disabled = false;
       return;
     }
     
     totalQuestionsEl.textContent = allTests.length;
     
+    // Extract unique topics
+    extractTopics();
+    console.log("Available topics:", Array.from(availableTopics));
+    
+    // Populate topics list
+    populateTopicsList();
+    
     // Hide loader and enable button
     loaderOverlay.style.display = 'none';
     startBtn.disabled = false;
     
   }).catch(err => {
+    console.error("Fetch error:", err);
     showNotification('შეცდომა ფაილის ჩატვირთვისას: ' + err.message);
     loaderOverlay.innerHTML = `<div style="color: var(--danger); font-weight: 600; text-align: center; padding: 20px;">შეცდომა ჩატვირთვისას<br><small>${err.message}</small></div>`;
-    // Enable button even on error so user can try again
     startBtn.disabled = false;
-    console.error(err);
   });
+}
+
+/* ----------------- Extract unique topics ----------------- */
+function extractTopics() {
+  availableTopics.clear();
+  
+  allTestsWithTopics.forEach(test => {
+    if (test.topic && test.topic.trim() !== '') {
+      availableTopics.add(test.topic.trim());
+    } else {
+      availableTopics.add('ზოგადი'); // Default category
+    }
+  });
+}
+
+function populateTopicsList() {
+  const topicsSelect = document.getElementById('topicsSelect');
+  if (!topicsSelect) return;
+  
+  // Clear the select element (keep the first option which is now "ტესტები თემების მიხედვით")
+  topicsSelect.innerHTML = '<option value="all" selected>ტესტები თემების მიხედვით</option>';
+  
+  // Count questions per topic
+  const topicCounts = {};
+  allTestsWithTopics.forEach(test => {
+    const topic = test.topic && test.topic.trim() !== '' ? test.topic.trim() : 'ზოგადი';
+    topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+  });
+  
+  // Keep topics in the original order they appear in the CSV
+  const topicsInOrder = [];
+  const seenTopics = new Set();
+  
+  // Go through all tests and collect topics in the order they appear
+  allTestsWithTopics.forEach(test => {
+    const topic = test.topic && test.topic.trim() !== '' ? test.topic.trim() : 'ზოგადი';
+    if (!seenTopics.has(topic)) {
+      seenTopics.add(topic);
+      topicsInOrder.push(topic);
+    }
+  });
+  
+  const sortedTopics = topicsInOrder; // Use the order from CSV, not alphabetical
+  
+  // Add each topic as an option
+  sortedTopics.forEach(topic => {
+    const count = topicCounts[topic] || 0;
+    const option = document.createElement('option');
+    option.value = topic;
+    option.textContent = `${topic} (${count})`;
+    topicsSelect.appendChild(option);
+  });
+  
+  // Add event listener for selection changes
+  topicsSelect.addEventListener('change', function() {
+    updateSelectedTopics();
+  });
+}
+
+/* ----------------- Update topics header with selected topic ----------------- */
+function updateTopicsHeader() {
+  const topicsHeader = document.querySelector('.topic-dropdown-header');
+  if (!topicsHeader) return;
+  
+  // Remove existing counter if any
+  const existingCounter = topicsHeader.querySelector('.selected-count');
+  if (existingCounter) existingCounter.remove();
+  
+  // Remove existing clear button if any
+  const existingClearBtn = topicsHeader.querySelector('.clear-selection');
+  if (existingClearBtn) existingClearBtn.remove();
+  
+  // Show selected topic
+  if (selectedTopic && selectedTopic !== 'all') {
+    // Add counter
+    const counter = document.createElement('span');
+    counter.className = 'selected-count';
+    counter.textContent = `არჩეული: ${selectedTopic}`;
+    topicsHeader.appendChild(counter);
+    
+    // Add clear button
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'clear-selection';
+    clearBtn.textContent = 'გასუფთავება';
+    clearBtn.type = 'button';
+    clearBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const topicsSelect = document.getElementById('topicsSelect');
+      if (topicsSelect) {
+        topicsSelect.value = 'all';
+        updateSelectedTopics();
+        updateTopicsHeader();
+      }
+    });
+    topicsHeader.appendChild(clearBtn);
+  }
+}
+
+function updateSelectedTopics() {
+  const topicsSelect = document.getElementById('topicsSelect');
+  if (!topicsSelect) return;
+  
+  const selectedValue = topicsSelect.value;
+  
+  if (selectedValue === 'all') {
+    selectedTopic = null;
+  } else {
+    selectedTopic = selectedValue;
+  }
 }
 
 /* ----------------- Start Test ----------------- */
@@ -2469,8 +2881,23 @@ startBtn.addEventListener('click', () => {
     return;
   }
   
+  // Get selected topic from dropdown
+  const topicsSelect = document.getElementById('topicsSelect');
+  if (topicsSelect) {
+    const selectedValue = topicsSelect.value;
+    
+    if (!selectedValue || selectedValue === '') {
+      showNotification('გთხოვთ აირჩიოთ თემა!');
+      return;
+    }
+  } else {
+    showNotification('გთხოვთ აირჩიოთ თემა!');
+    return;
+  }
+  
   // Check if at least one mode is selected
-  if (!modeSequential.checked && !modeShuffleQuestions.checked && !modeShuffleAnswers.checked && !modeExam.checked) {
+  if (!modeSequential.checked && !modeShuffleQuestions.checked && 
+      !modeShuffleAnswers.checked && !modeExam.checked) {
     showNotification('აირჩიეთ რეჟიმი დასაწყებად!');
     return;
   }
@@ -2483,23 +2910,38 @@ startBtn.addEventListener('click', () => {
   const shuffleQuestions = modeShuffleQuestions.checked || examMode;
   const shuffleAnswers = modeShuffleAnswers.checked || examMode;
   
+  // Filter tests by topic if selected
+  let testsToUse = allTestsWithTopics;
+  
+  // Filter by selected topic
+  if (selectedTopic && selectedTopic !== 'all') {
+    testsToUse = allTestsWithTopics.filter(test => {
+      const testTopic = test.topic && test.topic.trim() !== '' ? test.topic.trim() : 'ზოგადი';
+      return testTopic === selectedTopic;
+    });
+    
+    if (testsToUse.length === 0) {
+      showNotification(`არჩეულ თემას არ გააჩნია ტესტები`);
+      return;
+    }
+  }
+  
   // Prepare session tests
   if (examMode) {
-    // For exam mode, shuffle all tests and take first 200
-    const shuffledAll = [...allTests];
+    // For exam mode, shuffle all tests and take first 200 (or fewer if filtered)
+    const shuffledAll = [...testsToUse];
     shuffleArray(shuffledAll);
-    sessionTests = shuffledAll.slice(0, 200).map(t => ({ 
+    sessionTests = shuffledAll.slice(0, Math.min(200, shuffledAll.length)).map(t => ({ 
       question: t.question, 
       answers: t.answers.map(a => ({...a})),
       selectedAnswers: [],
       hasCorrectAnswer: false,
       isComplete: false,
-      // Track whether answer is correct (for results)
       isAnswerCorrect: null
     }));
   } else {
-    // For normal mode, use all tests
-    sessionTests = allTests.map(t => ({ 
+    // For normal mode, use all filtered tests
+    sessionTests = testsToUse.map(t => ({ 
       question: t.question, 
       answers: t.answers.map(a => ({...a})),
       selectedAnswers: [],
@@ -2523,6 +2965,12 @@ startBtn.addEventListener('click', () => {
   // Switch screens
   optionsScreen.style.display = 'none';
   testScreen.classList.add('active');
+  
+  // Show selected topic in the timer area
+  if (selectedTopic && selectedTopic !== 'all') {
+    // You could add the topic name somewhere, e.g., in the timer area
+    timerElement.innerHTML += `<br><small>თემა: ${selectedTopic}</small>`;
+  }
   
   if (examMode) {
     startExamMode();
@@ -2773,6 +3221,185 @@ answerEl.addEventListener('click', () => {
   
   updateExamAutoButton();
 }
+
+function parseCSVTwoColumns(csvText){
+  if (!csvText) return [];
+  
+  // Clean the CSV text
+  csvText = csvText.trim();
+  csvText = csvText.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  
+  const rows = [];
+  const lines = csvText.split('\n');
+  
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
+    
+    // More robust CSV parsing that handles quoted commas
+    let columns = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      const next = line[i + 1];
+      
+      if (ch === '"') {
+        if (inQuotes && next === '"') {
+          current += '"';
+          i++; // Skip next quote
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue; // Don't add the quote character
+      } else if (ch === ',' && !inQuotes) {
+        columns.push(current.trim());
+        current = '';
+        continue;
+      }
+      current += ch;
+    }
+    
+    // Add the last column
+    columns.push(current.trim());
+    
+    // Ensure we have at least 2 columns
+    if (columns.length === 1) {
+      columns.push(''); // Empty topic for column B
+    }
+    
+    rows.push({
+      columnA: columns[0],
+      columnB: columns[1] || ''
+    });
+  }
+  
+  return rows;
+}
+
+function buildTestsFromCSV(rawRows){
+  console.log("=== BUILDING TESTS FROM 2-COLUMN CSV ===");
+  
+  const tests = [];
+  let currentTest = null;
+  let currentTopic = 'ზოგადი'; // Default topic
+  
+  for (let i = 0; i < rawRows.length; i++){
+    const columnA = rawRows[i].columnA;
+    const columnB = rawRows[i].columnB;
+    
+    // Skip completely empty rows
+    if (!columnA && !columnB) continue;
+    
+    const normalizedA = normalizeLine(columnA);
+    const topic = normalizeLine(columnB);
+    
+    // If Column B has a topic, update current topic
+    if (topic && topic !== '') {
+      currentTopic = topic;
+      console.log(`Row ${i}: Found topic in Column B: "${currentTopic}"`);
+    }
+    
+    const type = detectLineType(normalizedA);
+    
+    if (type === 'question'){
+      // Save previous test if exists
+      if (currentTest && currentTest.answers.length > 0) {
+        currentTest.topic = currentTopic;
+        tests.push(currentTest);
+        console.log(`Pushed test with topic: "${currentTest.topic}"`);
+      }
+      
+      // Start new test with current topic
+      currentTest = { 
+        raw: normalizedA, 
+        question: stripLeadingSymbol(normalizedA), 
+        topic: currentTopic, // Always use current topic
+        answers: [], 
+        sourceIndex: i 
+      };
+      
+      console.log(`New question at row ${i}: "${currentTest.question.substring(0, 50)}...", Topic: "${currentTest.topic}"`);
+      
+    } else if ((type === 'correct' || type === 'incorrect') && currentTest){
+      const isCorrect = (type === 'correct');
+      const txt = stripLeadingSymbol(normalizedA);
+      if (txt.length > 0) {
+        currentTest.answers.push({ 
+          text: txt, 
+          correct: isCorrect,
+          originalText: txt
+        });
+      }
+    }
+  }
+  
+  // Don't forget the last test
+  if (currentTest && currentTest.answers.length > 0) {
+    currentTest.topic = currentTopic;
+    tests.push(currentTest);
+    console.log(`Pushed final test with topic: "${currentTest.topic}"`);
+  }
+  
+  console.log(`Built ${tests.length} tests from CSV`);
+  
+  // Filter out tests without answers
+  const filteredTests = tests.filter(t => Array.isArray(t.answers) && t.answers.length > 0);
+  
+  // Log topic distribution
+  const topicCounts = {};
+  filteredTests.forEach(test => {
+    const topic = test.topic || 'ზოგადი';
+    topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+  });
+  
+  console.log("Topic distribution:", topicCounts);
+  
+  return filteredTests;
+}
+
+function stripLeadingSymbol(str) {
+  if (!str) return '';
+  
+  // Remove leading ¢ and any ID pattern that follows
+  let cleaned = str.replace(/^¢\s*(ID=\d+\s*)?/, '').trim();
+  
+  // Also remove other symbols if present
+  cleaned = cleaned.replace(/^[✔️✔✓✅+❌✖️✖✕✗✘\-]\s*/, '');
+  
+  return cleaned;
+}
+
+/* ----------------- Debug CSV structure ----------------- */
+function debugCSVStructure(txt) {
+  console.log("=== DEBUGGING CSV STRUCTURE ===");
+  
+  const lines = txt.split('\n');
+  console.log(`Total lines: ${lines.length}`);
+  
+  // Look for lines with topics (non-empty column B)
+  let topicLines = 0;
+  for (let i = 0; i < Math.min(20, lines.length); i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    const parts = line.split(',');
+    if (parts.length >= 2) {
+      const colA = parts[0].trim();
+      const colB = parts[1].trim();
+      
+      if (colB && colB !== '') {
+        console.log(`Line ${i} has topic: A="${colA.substring(0, 30)}...", B="${colB}"`);
+        topicLines++;
+      }
+    }
+  }
+  
+  console.log(`Found ${topicLines} lines with topics in first 20 lines`);
+  return topicLines > 0;
+}
+
 
 /* ----------------- Update Auto Button ----------------- */
 function updateAutoButton() {
@@ -3042,19 +3669,23 @@ function showCompletionScreen() {
   });
 }
 
-/* ----------------- Initialize on page load ----------------- */
 window.addEventListener('DOMContentLoaded', () => {
   console.log("DOM loaded, initializing app...");
   
-  // Load CSV tests
-  loadCSV();
+  // Debug: Check if elements exist
+  console.log("topicsDropdown exists:", !!topicsDropdown);
+  console.log("topicsSelect exists:", !!topicsSelect);
+  
+  // Load CSV tests (CHANGED THIS LINE)
+  loadCSV(); // Changed from loadCSVWithFallback()
   
   // Start system timer
   setInterval(updateTimer, 1000);
   updateTimer();
-  
+
   // Initialize chat
   initChat();
+
   
   // Bind events
   bindNavigationEvents();
@@ -3096,6 +3727,47 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+  
+  // Debug button code
+  document.getElementById('debugBtn').addEventListener('click', function() {
+    // Create sample tests with topics
+    allTestsWithTopics = [
+      {
+        question: "Sample question 1",
+        topic: "კარდიოლოგია",
+        answers: [
+          { text: "Correct answer", correct: true },
+          { text: "Wrong answer", correct: false },
+          { text: "Wrong answer 2", correct: false }
+        ]
+      },
+      {
+        question: "Sample question 2",
+        topic: "პულმონოლოგია",
+        answers: [
+          { text: "Wrong answer", correct: false },
+          { text: "Correct answer", correct: true },
+          { text: "Wrong answer 2", correct: false }
+        ]
+      }
+    ];
+    
+    allTests = allTestsWithTopics;
+    totalQuestionsEl.textContent = allTests.length;
+    extractTopics();
+    populateTopicsList();
+    loaderOverlay.style.display = 'none';
+    startBtn.disabled = false;
+    
+    showNotification("Loaded sample tests for debugging", false);
+  });
+  
+  // Show debug button if loading fails
+  setTimeout(() => {
+    if (allTests.length === 0) {
+      document.getElementById('debugBtn').style.display = 'block';
+    }
+  }, 5000);
 });
 </script>
 </body>
