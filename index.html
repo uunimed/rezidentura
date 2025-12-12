@@ -2905,11 +2905,11 @@ startBtn.addEventListener('click', () => {
   // Reset stats
   autoMode = false;
   
-  // Get selected modes
-  examMode = modeExam.checked;
-  const shuffleQuestions = modeShuffleQuestions.checked || examMode;
-  const shuffleAnswers = modeShuffleAnswers.checked || examMode;
-  
+// Get selected modes
+examMode = modeExam.checked;
+const shuffleQuestions = modeShuffleQuestions.checked || examMode;  // Keep this
+const shuffleAnswers = modeShuffleAnswers.checked;                   // Fixed - remove examMode forcing
+
   // Filter tests by topic if selected
   let testsToUse = allTestsWithTopics;
   
@@ -2927,38 +2927,38 @@ startBtn.addEventListener('click', () => {
   }
   
   // Prepare session tests
-  if (examMode) {
-    // For exam mode, shuffle all tests and take first 200 (or fewer if filtered)
-    const shuffledAll = [...testsToUse];
-    shuffleArray(shuffledAll);
-    sessionTests = shuffledAll.slice(0, Math.min(200, shuffledAll.length)).map(t => ({ 
-      question: t.question, 
-      answers: t.answers.map(a => ({...a})),
-      selectedAnswers: [],
-      hasCorrectAnswer: false,
-      isComplete: false,
-      isAnswerCorrect: null
-    }));
-  } else {
-    // For normal mode, use all filtered tests
-    sessionTests = testsToUse.map(t => ({ 
-      question: t.question, 
-      answers: t.answers.map(a => ({...a})),
-      selectedAnswers: [],
-      hasCorrectAnswer: false,
-      isComplete: false,
-      isAnswerCorrect: null
-    }));
-  }
+if (examMode) {
+  // For exam mode, shuffle all tests and take first 200 (or fewer if filtered)
+  const shuffledAll = [...testsToUse];
+  shuffleArray(shuffledAll);
+  sessionTests = shuffledAll.slice(0, Math.min(200, shuffledAll.length)).map(t => ({ 
+    question: t.question, 
+    answers: t.answers.map(a => ({...a})),
+    selectedAnswers: [],
+    hasCorrectAnswer: false,
+    isComplete: false,
+    isAnswerCorrect: null
+  }));
+} else {
+  // For normal mode, use all filtered tests
+  sessionTests = testsToUse.map(t => ({ 
+    question: t.question, 
+    answers: t.answers.map(a => ({...a})),
+    selectedAnswers: [],
+    hasCorrectAnswer: false,
+    isComplete: false,
+    isAnswerCorrect: null
+  }));
+}
   
-  // Apply selected modes
-  if (shuffleQuestions && !examMode) {
-    shuffleArray(sessionTests);
-  }
-  
-  if (shuffleAnswers) {
-    sessionTests.forEach(q => shuffleArray(q.answers));
-  }
+// Apply selected modes
+if (shuffleQuestions && !examMode) {
+  shuffleArray(sessionTests);
+}
+
+if (shuffleAnswers) {
+  sessionTests.forEach(q => shuffleArray(q.answers));
+}
   
   currentIndex = 0;
   
